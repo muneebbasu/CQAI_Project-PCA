@@ -16,20 +16,13 @@ st.set_page_config(
     page_icon="📸",
     layout="wide",
     initial_sidebar_state="expanded",
-    menu_items={'About': "This is a Streamlit app that demonstrates how Principal Component Analysis (PCA) can be used to compress images."
-                "It allows users to upload images, apply PCA to compress them, and learn about the workings of PCA."
-                "Read more at [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis)."
-                "This app was created by [Muneeb Basu](https://github.com/muneebbasu)."}
-    )
+)
 
 # Custom CSS for styling
 st.markdown("""
     <style>
-    .body {background-color: #f2c698;}
     .main {
-            background-image: url("https://img.freepik.com/free-vector/abstract-digital-grid-vector-black-background_53876-111550.jpg?w=1060&t=st=1716399426~exp=1716400026~hmac=97281767934e05e30adeedc638b5a2db43b1604b832f57eabb46a2b7cef8a7a8");
-            background-size: cover;
-#        background-color: #add8e0;
+        background-color: #f0f2f6;
     }
     .sidebar .sidebar-content {
         background-color: #fff;
@@ -48,17 +41,10 @@ st.markdown("""
 def home():
     st.title("📸 Image PCA - Do & Learn")
     st.markdown("""
-        <style>
-        .markdown-text {
-            font-size: 30px;
-            text-align: justify;
-            color: #b7bdc2;
-        }
-        </style>
-        Welcome to **Image Principal Component Analysis - Do & Learn**!
+        Welcome to **Image PCA - Do & Learn**!
         - Upload your images to compress and learn about PCA.
         - Navigate through the sidebar to explore different features.
-    """, unsafe_allow_html=True)
+    """)
     
 
 def upload_image():
@@ -115,16 +101,77 @@ def upload_image():
                         
 def how_pca_works():
 
-    with open('markdowns\pca_working_markdown.md', 'r') as f:
-        markdown_text = f.read()
-
     # Title and explanation of PCA
     st.title("📊 How PCA Works (For Technosuists)")
     
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
     if show_pca_workings:
-        st.markdown(markdown_text, unsafe_allow_html=True)
+        st.markdown("""
+            ### Detailed Workings of PCA:
+            
+            1. **Convert image to numpy array**:
+            ```python
+            img_array = np.array(img)
+            ```
+            
+            2. **Splitting RGB channels**:
+            ```python
+            red_channel = img_array[:, :, 0]
+            green_channel = img_array[:, :, 1]
+            blue_channel = img_array[:, :, 2]
+            ```
+            
+            3. **Apply PCA on each channel**:
+            ```python
+            red_compressed = pca_compress(red_channel, num_components)
+            green_compressed = pca_compress(green_channel, num_components)
+            blue_compressed = pca_compress(blue_channel, num_components)
+            ```
+            
+            4. **Combine compressed channels into one image**:
+            ```python
+            compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
+            compressed_img = Image.fromarray(np.uint8(compressed_img_array))
+            ```
+            
+            5. **Function to perform PCA compression on a single channel**:
+            ```python
+            def pca_compress(channel, num_components):
+                # Subtract the mean from the data
+                mean = np.mean(channel, axis=0)
+                centered_data = channel - mean
+
+                # Compute the covariance matrix
+                cov_matrix = np.cov(centered_data, rowvar=False)
+
+                # Compute the eigenvalues and eigenvectors of the covariance matrix
+                eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
+
+                # Sort eigenvalues and eigenvectors in descending order
+                sorted_indices = np.argsort(eig_vals)[::-1]
+                sorted_eig_vals = eig_vals[sorted_indices]
+                sorted_eig_vecs = eig_vecs[:, sorted_indices]
+
+                # Choose the number of principal components
+                if num_components > len(sorted_eig_vals):
+                    num_components = len(sorted_eig_vals)
+                elif num_components < 1:
+                    num_components = 1
+
+                # Project the data onto the selected principal components
+                projection_matrix = sorted_eig_vecs[:, :num_components]
+                compressed_data = np.dot(centered_data, projection_matrix)
+
+                # Reconstruct the data
+                reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
+
+                # Clip the values to [0, 255]
+                reconstructed_data = np.clip(reconstructed_data, 0, 255)
+
+                return reconstructed_data.astype(np.uint8)
+            ```
+        """)
         
         #uploaded_image = st.session_state['original_image']
         #original_image = Image.open(uploaded_image)
