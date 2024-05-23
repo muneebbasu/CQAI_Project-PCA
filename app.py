@@ -17,9 +17,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={'About': "This is a Streamlit app that demonstrates how Principal Component Analysis (PCA) can be used to compress images."
-                         "It allows users to upload images, apply PCA to compress them, and learn about the workings of PCA."
-                         "Read more at [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis)."
-                         "This app was created by [Muneeb Basu](https://github.com/muneebbasu)."}
+                "It allows users to upload images, apply PCA to compress them, and learn about the workings of PCA."
+                "Read more at [Wikipedia](https://en.wikipedia.org/wiki/Principal_component_analysis)."
+                "This app was created by [Muneeb Basu](https://github.com/muneebbasu)."}
     )
 
 # Custom CSS for styling
