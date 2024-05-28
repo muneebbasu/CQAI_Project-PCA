@@ -102,7 +102,7 @@ def upload_image():
 def how_pca_works():
 
     # Title and explanation of PCA
-    st.title("📊 How PCA Works (For Technosuists)")
+    st.title("📊 How PCA Works (Technerds World!)")
     
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
@@ -380,13 +380,13 @@ def what_PCA():
 
 # Streamlit navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technosuists)", "Comparison", "But What is PCA?","Feedback","View Feedback"])
+page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (Technerds World!)", "Comparison", "But What is PCA?","Feedback","View Feedback"])
 
 if page == "Home":
     home()
 elif page == "Compress Image":
     upload_image()
-elif page == "How PCA Works (For Technosuists)":
+elif page == "How PCA Works (Technerds World!)":
     how_pca_works()
 elif page == "Comparison":
     comparison()
