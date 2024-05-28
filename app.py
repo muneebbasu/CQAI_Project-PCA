@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from utils import apply_pca, validate_image
+from utils import apply_pca, validate_image # type: ignore
 import base64
 from streamlit_star_rating import st_star_rating
 import numpy as np
@@ -15,14 +15,16 @@ def load_image(url):
     img = Image.open(BytesIO(response.content))
     return img
 
+
 # Set page config
 st.set_page_config(
-    page_title="Image PCA - Do & Learn",
+    page_title="PCA ImageXpert",
     page_icon="📸",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
+# Custom CSS for styling
 # Custom CSS for styling
 st.markdown("""
     <style>
@@ -44,53 +46,94 @@ st.markdown("""
 
 # Page functions
 def home():
-    st.title("📸 Image PCA - Do & Learn")
     st.markdown("""
-        Welcome to **Image PCA - Do & Learn**!
-        - Upload your images to compress and learn about PCA.
-        - Navigate through the sidebar to explore different features.
-    """)
+    <style>
+        .art-title {
+            font-family: 'Arial', sans-serif; /* Professional font */
+            text-align: center;
+            color: #555555; /* Slightly lighter color */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4), 4px 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadows for 3D effect */
+            font-size: 53px; /* Adjusted font size for professionalism */
+            margin: 20px 0; /* Reduced margin */
+            letter-spacing: 2px;
+            line-height: 1.0;
+        }
+        body {
+            background-color: #FFFFFF; /* White background */
+            color: #000000; /* Black text color */
+        }
+    </style>
+    <h1 class="art-title">
+    📸 PCA ImageXpert 
+    </h1>
+    """, unsafe_allow_html=True)
 
-    # Load and display images to demonstrate PCA applications
-    images_urls = [
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBsA0XGxXRQzuNJ5uVgfqLXaJWtlsUfOaW6P9NMaMDcw&s",
-        "https://i.ytimg.com/vi/wCtLgEZd0Gw/maxresdefault.jpg",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5a4mZ1KMH67p7OgE4zzyhIyMaaDjRQru74w&s"
-    ]
-
-    st.image(load_image(images_urls[0]), caption='PCA for Image Compression', use_column_width=True)
-    st.image(load_image(images_urls[1]), caption='Comparison Before and After PCA', use_column_width=True)
-    st.image(load_image(images_urls[2]), caption='Understanding PCA', use_column_width=True)
-
-    st.markdown("""
-    ## Features
-    Explore the different features of our application:
-    - **[Home](#home-page)**
-    - **[Compress Image](#compress-image)**
-    - **[Comparison](#comparison)**
-    - **[How PCA Works for Technerds](#how-pca-works-for-technerds)**
-    - **[What is PCA](#what-is-pca)**
-    - **[Feedback](#feedback)**
-    - **[View Feedback](#view-feedback)**
-
-    ## Know More
-    To dive deeper into PCA and its applications, click on the tabs above and start exploring!
-    """)
 
     st.markdown("""
-    ### Why PCA?
-    Principal Component Analysis (PCA) is a powerful statistical technique used for dimensionality reduction. It's widely used in:
-    - **Image Compression:** Reducing the size of images while preserving essential features.
-    - **Noise Reduction:** Enhancing image quality by removing noise.
-    - **Feature Extraction:** Identifying important features in large datasets, often used in machine learning models.
+        <style>
+        .big-paragraph {
+            font-size: 20px;
+            line-height: 1.5;
+            margin-top: 20px;
+            text-align: left;
+            }
+            .sub {
+                text-align: center;
+                font-size: 28px;
+            }
+            @keyframes moveLeft {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(-10px); }
+            100% { transform: translateX(0px); }
+            }
 
-    By using our application, you can see these principles in action and understand the impact of PCA on image processing. Start with the **Compress Image** feature to see how much space you can save without losing significant details.
-    """)
+            .moving-emoji-container {
+            display: flex;
+            justify-content: center;
+            }
+
+            .moving-emoji {
+            animation: moveLeft 1s infinite;
+            font-size: 39px; /* Adjust the size as needed */
+            }
+        </style>
+        <p class="sub">Welcome to PCA ImageXpert!</p>
+        <p class="big-paragraph">
+        Unlock the power of Principal Component Analysis (PCA) with PCA ImageXpert, your comprehensive, pedagogical platform designed to make learning and applying PCA accessible, engaging, and fun. Whether you’re a tech nerd diving deep into the logic and code, or a beginner exploring the basics, PCA ImageXpert is crafted to guide you through the fascinating world of unsupervised machine learning with ease.
+        <p><strong style="font-size: 24px;">Navigate Your PCA Journey</strong>.</p>
+            <p style="font-size: 20px;">Our intuitive navigation bar helps you explore all the features PCA ImageXpert offers:</p>
+            <p><strong style="font-size: 20px;">Home:</strong> <span style="font-size: 20px;">Return to the main page anytime to see the latest updates and featured content.</span></p>
+            <p><strong style="font-size: 20px;">Compress Image:</strong> <span style="font-size: 20px;">Effortlessly upload your images in JPG, JPEG, or PNG format and experience the magic of PCA-powered image compression. Other formats are not supported to ensure the best quality and performance.</span></p>
+            <p><strong style="font-size: 20px;">How PCA works:</strong> <span style="font-size: 20px;">Dive into the detailed workings of PCA. Understand the underlying logic, algorithms, and code implementations. Perfect for those who want to get into the technical nitty-gritty.</span></p>
+            <p><strong style="font-size: 20px;">Learn PCA:</strong> <span style="font-size: 20px;">Start from scratch with our beginner-friendly tutorials. We break down complex concepts into easy-to-understand lessons, making PCA accessible even to a child.</span></p>
+            <p><strong style="font-size: 20px;">Compare Images:</strong> <span style="font-size: 20px;">See the difference PCA makes. Upload an image, let our application compress it, and then compare the original and compressed versions side by side. Analyze various metrics and view histograms of the similarity index to understand the effectiveness of the compression.</span></p>
+            <p><strong style="font-size: 20px;">Feedback:</strong> <span style="font-size: 20px;">Share your thoughts and see what others have to say. Your feedback helps us improve, and we value every suggestion.</span></p>
+            <p><strong style="font-size: 20px;">View Feedback:</strong><span style="font-size: 20px;"> This feature allows users to see feedbacks and suggestions given by users.</span></p>
+            <p><strong style="font-size: 24px;">Why PCA ImageXpert?</strong></p>
+            <p style="font-size: 20px;">PCA ImageXpert isn’t just another tech tool; it’s a learning companion. We believe in honesty, clarity, and making complex subjects approachable. Our features are designed to provide a seamless experience, whether you’re learning the basics or exploring advanced applications.</p>
+            <p style="font-size: 20px;"><strong>Educational:</strong> Learn PCA in a structured, easy-to-follow way.</p>
+            <p style="font-size: 20px;"><strong>Practical:</strong> Apply PCA to real-world tasks like image compression.</p>
+            <p style="font-size: 20px;"><strong>Interactive:</strong> Compare and analyze results to deepen your understanding.</p>
+            <p style="font-size: 20px;"><strong>Community-Driven:</strong> Engage with a community of learners and tech enthusiasts through feedback and shared experiences.</p>
+            <p style="font-size: 20px;">Join us on PCA ImageXpert and transform your understanding of PCA from theory to practice. Let’s make data science not just understandable but also enjoyable for everyone.</p>
+            <p style="font-size: 20px;">Welcome aboard, and happy learning!</p>
+        </p>
+        
+        <div class="moving-emoji-container">
+        <div class="moving-emoji">👈</div>
+        </div>
+    
+    """, unsafe_allow_html=True)
+    
 
     st.markdown("""
-    For more information, visit our [documentation](https://example.com/documentation) or contact our [support team](https://example.com/support).
-    """)
-
+        <footer style="position: fixed; bottom: 0; left: 0; width: 100%; margin: 0; text-align: center; font-size: 14px; color: black; border: 1px solid #333; color: #fff; background-color: black">
+        @All rights reserved. Quantum Inno Vissionaries
+        </footer>
+                """, unsafe_allow_html=True)
+    # st.markdown(generate_footer(), unsafe_allow_html=True)
+    
+    
 def upload_image():
     st.title("📤 Compress Image")
     st.write("Upload your image here:")
@@ -142,10 +185,11 @@ def upload_image():
                 
         else:
             st.error("Unsupported file format. Please upload a jpg, jpeg, or png file.")
-
+                        
 def how_pca_works():
+
     # Title and explanation of PCA
-    st.title("📊 How PCA Works (For Technerds)")
+    st.title("📊 How PCA Works (For Technosuists)")
     
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
@@ -215,11 +259,17 @@ def how_pca_works():
                 return reconstructed_data.astype(np.uint8)
             ```
         """)
-
+        
+        #uploaded_image = st.session_state['original_image']
+        #original_image = Image.open(uploaded_image)
+        
         original_image = Image.open(BytesIO(st.session_state['image']))
         no_of_components = st.session_state['no_of_components']
         
+        # Function to apply PCA on an image
         def apply_pca(original_image, no_of_components):
+            
+            # Retrieve the number of components from the session state
             img_array = np.array(original_image.convert("RGB"))
             st.image(img_array, caption='Original Image', use_column_width=True)
             
@@ -248,6 +298,7 @@ def how_pca_works():
             compressed_img_bytes.seek(0)
             return compressed_img_bytes
 
+        # Function to perform PCA compression on a single channel
         def pca_compress(channel, no_of_components, channel_name):
             # Subtract the mean from the data
             mean = np.mean(channel, axis=0)
@@ -255,7 +306,8 @@ def how_pca_works():
             
             # Normalize centered data for display
             centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
-            
+            #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
+
             # Compute the covariance matrix
             cov_matrix = np.cov(centered_data, rowvar=False)
             st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
@@ -284,6 +336,7 @@ def how_pca_works():
             
             # Normalize compressed data for display
             compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
+            #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
 
             # Reconstruct the data
             reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
@@ -297,9 +350,10 @@ def how_pca_works():
 
             return reconstructed_data.astype(np.uint8)
         
+
         if st.button('Apply PCA'):
             apply_pca(original_image, no_of_components)
-
+            
 def display_metrics(original_image, compressed_image):
     original_bytes = BytesIO()
     compressed_bytes = BytesIO()
@@ -319,6 +373,7 @@ def display_metrics(original_image, compressed_image):
     original_array = np.array(original_image)
     compressed_array = np.array(compressed_image)
 
+    # Compute SSIM with explicit window size and channel axis
     win_size = min(original_array.shape[0], original_array.shape[1], compressed_array.shape[0], compressed_array.shape[1], 7)
     ssim_index = ssim(original_array, compressed_array, win_size=win_size, channel_axis=-1)
     
@@ -362,8 +417,9 @@ def comparison():
             display_histogram(compressed_image, "Compressed Image Histogram")
             
     else:
-        st.write("**Warning**: Upload the Image first!")
-
+        st.write("No images stored for comparison.")
+        
+# Initialize SessionState
 def init_session():
     return {"feedback_data": []}
 
@@ -371,6 +427,7 @@ session_state = st.session_state
 
 if "feedback_data" not in session_state:
     session_state.update(init_session())
+
 
 def feedback():
     st.title("💬 Feedback")
@@ -383,10 +440,12 @@ def feedback():
     st.subheader("Feedback Comment:")
     feedback_comment = st.text_area("Please leave your feedback comment here.")
     
+    # Submit feedback button
     if st.button("Submit Feedback"):
+        # Save feedback to session state
         session_state.feedback_data.append({"feedback": feedback_comment, "rating": stars})
         st.success("Thank you for your feedback!")
-
+    
 def view_Feedback():
     st.title("View Feedback")
     st.write("Here are the feedback and suggestions provided by users:")
@@ -401,35 +460,20 @@ def view_Feedback():
             st.markdown("---")
     else:
         st.write("No feedback has been submitted yet.")
-
+        
 def what_PCA():
     st.title("But What is PCA?")
-    st.markdown("""
-    Principal Component Analysis (PCA) is a dimensionality-reduction method used to reduce the dimensionality of large data sets by transforming them into a new set of variables called principal components. These principal components are linear combinations of the original variables and are uncorrelated with each other.
-    
-    ### Key Concepts:
-    - **Dimensionality Reduction:** PCA helps in reducing the number of variables while retaining most of the original variance.
-    - **Principal Components:** New variables that are linear combinations of the original variables.
-    - **Variance:** The measure of how much information is retained from the original dataset.
 
-    ### Steps Involved:
-    1. **Standardize the data.**
-    2. **Compute the covariance matrix.**
-    3. **Calculate the eigenvalues and eigenvectors.**
-    4. **Sort the eigenvalues and select the top principal components.**
-    5. **Transform the data into the new subspace.**
 
-    PCA is widely used in fields such as image processing, data compression, and machine learning.
-    """)
-
+# Streamlit navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technerds)", "Comparison", "But What is PCA?", "Feedback", "View Feedback"])
+page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technosuists)", "Comparison", "But What is PCA?","Feedback","View Feedback"])
 
 if page == "Home":
     home()
 elif page == "Compress Image":
     upload_image()
-elif page == "How PCA Works (For Technerds)":
+elif page == "How PCA Works (For Technosuists)":
     how_pca_works()
 elif page == "Comparison":
     comparison()
@@ -439,3 +483,12 @@ elif page == "Feedback":
     feedback()
 elif page == "View Feedback":
     view_Feedback()
+
+# footer.py
+
+def generate_footer():
+    return """
+    <footer style="text-align: center; font-size: 14px; color: black;">
+        This is the footer text. You can add any additional information or links here.
+    </footer>
+    """
