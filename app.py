@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from utils import apply_pca, validate_image # type: ignore
+from utils import apply_pca, validate_image #type:ignore
 import base64
 from streamlit_star_rating import st_star_rating
 import numpy as np
@@ -28,8 +28,11 @@ st.set_page_config(
 # Custom CSS for styling
 st.markdown("""
     <style>
+    .body {background-color: #f2c698;}
     .main {
-        background-color: #f0f2f6;
+            background-image: url("https://images.unsplash.com/photo-1528460033278-a6ba57020470?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAyfHxtYWNoaW5lJTIwbGVhcm5pbmclMjBsaWdodCUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D");
+            background-size: cover;
+#        background-color: #add8e0;
     }
     .sidebar .sidebar-content {
         background-color: #fff;
@@ -48,11 +51,13 @@ st.markdown("""
 def home():
     st.markdown("""
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap'); /* Importing Merriweather from Google Fonts */
+
         .art-title {
-            font-family: 'Arial', sans-serif; /* Professional font */
+            font-family: 'Merriweather', serif; /* Professional and beautiful font */
             text-align: center;
-            color: #555555; /* Slightly lighter color */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4), 4px 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadows for 3D effect */
+            color: #2c3e50; /* Dark blue color for the text */
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5), 6px 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadows for 3D effect */
             font-size: 53px; /* Adjusted font size for professionalism */
             margin: 20px 0; /* Reduced margin */
             letter-spacing: 2px;
@@ -78,8 +83,13 @@ def home():
             text-align: left;
             }
             .sub {
+                font-family: 'Merriweather', serif; /* Professional and beautiful font */
                 text-align: center;
-                font-size: 28px;
+                font-size: 23px;
+                font-weight: bold; /* Making the text bold */
+                margin: 2px 0; /* Adding margin */
+                line-height: 1.5; /* Adjusting line height */
+                letter-spacing: 1.3px; /* Adjusting letter spacing */
             }
             @keyframes moveLeft {
             0% { transform: translateX(0px); }
@@ -101,6 +111,9 @@ def home():
         <p class="big-paragraph">
         Unlock the power of Principal Component Analysis (PCA) with PCA ImageXpert, your comprehensive, pedagogical platform designed to make learning and applying PCA accessible, engaging, and fun. Whether you’re a tech nerd diving deep into the logic and code, or a beginner exploring the basics, PCA ImageXpert is crafted to guide you through the fascinating world of unsupervised machine learning with ease.
         <p><strong style="font-size: 24px;">Navigate Your PCA Journey</strong>.</p>
+        <!-- Example of including image using HTML in a single line with options for changing size and alignment -->
+        <img src="https://www.designnominees.com/application/blog-images/website-easy-to-navigate.png" alt="Image" style="width: 600px; height: auto; margin: auto; display: block;">
+        <br>
             <p style="font-size: 20px;">Our intuitive navigation bar helps you explore all the features PCA ImageXpert offers:</p>
             <p><strong style="font-size: 20px;">Home:</strong> <span style="font-size: 20px;">Return to the main page anytime to see the latest updates and featured content.</span></p>
             <p><strong style="font-size: 20px;">Compress Image:</strong> <span style="font-size: 20px;">Effortlessly upload your images in JPG, JPEG, or PNG format and experience the magic of PCA-powered image compression. Other formats are not supported to ensure the best quality and performance.</span></p>
@@ -110,6 +123,8 @@ def home():
             <p><strong style="font-size: 20px;">Feedback:</strong> <span style="font-size: 20px;">Share your thoughts and see what others have to say. Your feedback helps us improve, and we value every suggestion.</span></p>
             <p><strong style="font-size: 20px;">View Feedback:</strong><span style="font-size: 20px;"> This feature allows users to see feedbacks and suggestions given by users.</span></p>
             <p><strong style="font-size: 24px;">Why PCA ImageXpert?</strong></p>
+        <img src="https://plannersweb.com/wp-content/uploads/1993/01/why-word.jpg" alt="Image" style="width: 500px; height: auto; margin: auto; display: block;">
+        <br>
             <p style="font-size: 20px;">PCA ImageXpert isn’t just another tech tool; it’s a learning companion. We believe in honesty, clarity, and making complex subjects approachable. Our features are designed to provide a seamless experience, whether you’re learning the basics or exploring advanced applications.</p>
             <p style="font-size: 20px;"><strong>Educational:</strong> Learn PCA in a structured, easy-to-follow way.</p>
             <p style="font-size: 20px;"><strong>Practical:</strong> Apply PCA to real-world tasks like image compression.</p>
@@ -117,6 +132,7 @@ def home():
             <p style="font-size: 20px;"><strong>Community-Driven:</strong> Engage with a community of learners and tech enthusiasts through feedback and shared experiences.</p>
             <p style="font-size: 20px;">Join us on PCA ImageXpert and transform your understanding of PCA from theory to practice. Let’s make data science not just understandable but also enjoyable for everyone.</p>
             <p style="font-size: 20px;">Welcome aboard, and happy learning!</p>
+            <p style="font-size: 20px;">By using our application, you can see these principles in action and understand the impact of PCA on image processing. Start with the Compress Image feature to see how much space you can save without losing significant details.</p>
         </p>
         
         <div class="moving-emoji-container">
@@ -125,6 +141,9 @@ def home():
     
     """, unsafe_allow_html=True)
     
+    st.markdown("""
+    For more information, visit our [documentation](https://example.com/documentation) or contact our [support team](https://example.com/support).
+    """)
 
     st.markdown("""
         <footer style="position: fixed; bottom: 0; left: 0; width: 100%; margin: 0; text-align: center; font-size: 14px; color: black; border: 1px solid #333; color: #fff; background-color: black">
@@ -189,7 +208,7 @@ def upload_image():
 def how_pca_works():
 
     # Title and explanation of PCA
-    st.title("📊 How PCA Works (For Technosuists)")
+    st.title("📊 How PCA Works (For Technerds!)")
     
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
@@ -389,7 +408,7 @@ def display_histogram(image, title):
     st.pyplot(fig)
 
 def comparison():
-    st.title("🖼️ Stored Images")
+    st.title("🖼️ Compare Images")
     
     if 'original_image' in st.session_state and 'compressed_image' in st.session_state:
         st.subheader("Comparison")
@@ -462,22 +481,22 @@ def view_Feedback():
         st.write("No feedback has been submitted yet.")
         
 def what_PCA():
-    st.title("But What is PCA?")
+    st.title("Learn PCA")
 
 
 # Streamlit navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technosuists)", "Comparison", "But What is PCA?","Feedback","View Feedback"])
+page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"])
 
 if page == "Home":
     home()
 elif page == "Compress Image":
     upload_image()
-elif page == "How PCA Works (For Technosuists)":
+elif page == "How PCA Works (For Technerds!)":
     how_pca_works()
-elif page == "Comparison":
+elif page == "Compare Images":
     comparison()
-elif page == "But What is PCA?":
+elif page == "Learn PCA":
     what_PCA()
 elif page == "Feedback":
     feedback()
