@@ -7,9 +7,7 @@ from streamlit_star_rating import st_star_rating
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 import matplotlib.pyplot as plt
-import json
-from pathlib import Path
-import datetime
+import requests
 
 # Function to load images from URLs
 def load_image(url):
@@ -19,6 +17,15 @@ def load_image(url):
 
 
 # Set page config
+st.set_page_config(
+    page_title="PCA ImageXpert",
+    page_icon="📸",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Custom CSS for styling
+# Custom CSS for styling
 st.markdown("""
     <style>
     .body {background-color: #f2c698;}
@@ -39,7 +46,6 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
-
 
 # Page functions
 def home():
@@ -144,10 +150,11 @@ def home():
         @All rights reserved. Quantum Inno Vissionaries
         </footer>
                 """, unsafe_allow_html=True)
-
-
+    # st.markdown(generate_footer(), unsafe_allow_html=True)
+    
+    
 def upload_image():
-    st.title("📤 Upload Image")
+    st.title("📤 Compress Image")
     st.write("Upload your image here:")
 
     # Upload the image
@@ -159,10 +166,6 @@ def upload_image():
             
             # Load the image
             img = Image.open(uploaded_image)
-            img_byte = BytesIO()
-            img.save(img_byte, format='JPEG')
-            img_byte.seek(0)
-            st.session_state['image'] = img_byte.getvalue()
         
             
             # Slider for choosing number of components
@@ -178,19 +181,18 @@ def upload_image():
                 
                 
                 st.session_state['original_image'] = uploaded_image
-                st.session_state['compressed_image'] = compressed_image
+                st.session_state['compressed_image'] = compressed_image_bytes
                 st.session_state['no_of_components'] = num_components
                 
                 
                 # Save and download compressed image
-                st.markdown("### Save Compressed Image")
                 st.write("Click the button below to save and download the compressed image.")
                 
                 # Convert PIL Image to bytes
                 img_bytes = BytesIO()
                 compressed_image.save(img_bytes, format='JPEG')
                 img_bytes.seek(0)
-                #st.session_state['image'] = img_bytes.getvalue()
+                st.session_state['image'] = img_bytes.getvalue()
                 
                 download_btn = st.download_button(
                     label="Download Compressed Image", 
@@ -200,21 +202,14 @@ def upload_image():
                     key="download_compressed_img"
                 )
                 
-    
         else:
             st.error("Unsupported file format. Please upload a jpg, jpeg, or png file.")
                         
 def how_pca_works():
 
     # Title and explanation of PCA
-    st.title("📊 How PCA Works")
+    st.title("📊 How PCA Works (For Technerds!)")
     
-    #original_image = Image.open(st.session_state['original_image'])
-    #no_of_components = st.session_state['no_of_components']
-    #st.image(original_image, "Original Image", use_column_width=True)
-    #st.write(f"Number of Components used for Compression: {no_of_components}")
-    
-    # Check button to display detailed explanation of the PCA function
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
     if show_pca_workings:
@@ -301,6 +296,7 @@ def how_pca_works():
             red_channel = img_array[:, :, 0]
             green_channel = img_array[:, :, 1]
             blue_channel = img_array[:, :, 2]
+            
             st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
             st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
             st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
@@ -442,15 +438,14 @@ def comparison():
     else:
         st.write("No images stored for comparison.")
         
-def load_feedback(file_path):
-    if Path(file_path).exists():
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    return []
+# Initialize SessionState
+def init_session():
+    return {"feedback_data": []}
 
-def save_feedback(file_path, feedback_data):
-    with open(file_path, 'w') as f:
-        json.dump(feedback_data, f, indent=4)
+session_state = st.session_state
+
+if "feedback_data" not in session_state:
+    session_state.update(init_session())
 
 
 def feedback():
@@ -459,48 +454,55 @@ def feedback():
     
     st.subheader("Rating:")
     stars = st_star_rating(label="Please rate your experience", maxValue=5, defaultValue=0, key="rating", resetLabel="Reset", customCSS="div {background-color: white;}")
-    
+    st.write(stars)
+
     st.subheader("Feedback Comment:")
     feedback_comment = st.text_area("Please leave your feedback comment here.")
     
-    if st.button("Submit"):
-        if stars and feedback_comment:
-            feedback_data = {
-                "rating": stars,
-                "comment": feedback_comment,
-                "timestamp": datetime.datetime.now().isoformat()
-            }
-            file_path = 'feedback.json'
-            feedbacks = load_feedback(file_path)
-            feedbacks.append(feedback_data)
-            save_feedback(file_path, feedbacks)
-            st.success("Thank you for your feedback!")
-        else:
-            st.error("Please provide both rating and comment.")
+    # Submit feedback button
+    if st.button("Submit Feedback"):
+        # Save feedback to session state
+        session_state.feedback_data.append({"feedback": feedback_comment, "rating": stars})
+        st.success("Thank you for your feedback!")
+    
+def view_Feedback():
+    st.title("View Feedback")
+    st.write("Here are the feedback and suggestions provided by users:")
 
-    st.subheader("Previous Feedback:")
-    feedbacks = load_feedback('feedback.json')
-    for feedback in feedbacks:
-        st.write(f"Rating: {feedback['rating']} stars")
-        st.write(f"Comment: {feedback['comment']}")
-        st.write(f"Submitted on: {feedback['timestamp']}")
-        st.write("---")
+    feedback_data = session_state.feedback_data
+
+    if feedback_data:
+        for index, feedback_entry in enumerate(feedback_data, start=1):
+            st.subheader(f"Feedback #{index}")
+            st.write(f"Rating: {feedback_entry['rating']}")
+            st.write(f"Feedback: {feedback_entry['feedback']}")
+            st.markdown("---")
+    else:
+        st.write("No feedback has been submitted yet.")
+        
+def what_PCA():
+    st.title("Learn PCA")
+
 
 # Streamlit navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Upload Image", "How PCA Works", "Comparison", "Feedback"])
+page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"])
 
 if page == "Home":
     home()
-elif page == "Upload Image":
+elif page == "Compress Image":
     upload_image()
-elif page == "How PCA Works":
+elif page == "How PCA Works (For Technerds!)":
     how_pca_works()
-elif page == "Comparison":
+elif page == "Compare Images":
     comparison()
+elif page == "Learn PCA":
+    what_PCA()
 elif page == "Feedback":
     feedback()
-    
+elif page == "View Feedback":
+    view_Feedback()
+
 # footer.py
 
 def generate_footer():
