@@ -3,7 +3,7 @@ import numpy as np
 from io import BytesIO
 
 # Function to apply PCA on image
-def apply_pca(img, num_components, jpeg_quality=85):
+def apply_pca(img, num_components):
     # Convert image to numpy array
     img_array = np.array(img)
 
@@ -23,10 +23,10 @@ def apply_pca(img, num_components, jpeg_quality=85):
     # Convert back to image
     compressed_img = Image.fromarray(np.uint8(compressed_img_array))
 
-    # Convert compressed image to BytesIO for storage with specified JPEG quality
+    # Convert compressed image to BytesIO for storage
     compressed_img_bytes = BytesIO()
-    compressed_img.save(compressed_img_bytes, format='JPEG', quality=jpeg_quality)
-    compressed_img_bytes.seek(0)
+    compressed_img.save(compressed_img_bytes, format='JPEG')
+    compressed_img_bytes.seek(0) 
     return compressed_img_bytes
 
 # Function to perform PCA compression on a single channel
@@ -47,7 +47,10 @@ def pca_compress(channel, num_components):
     sorted_eig_vecs = eig_vecs[:, sorted_indices]
 
     # Choose the number of principal components
-    num_components = max(1, min(num_components, len(sorted_eig_vals)))
+    if num_components > len(sorted_eig_vals):
+        num_components = len(sorted_eig_vals)
+    elif num_components < 1:
+        num_components = 1
 
     # Project the data onto the selected principal components
     projection_matrix = sorted_eig_vecs[:, :num_components]
@@ -65,4 +68,7 @@ def pca_compress(channel, num_components):
 def validate_image(uploaded_file):
     allowed_extensions = ["jpg", "jpeg", "png"]
     file_extension = uploaded_file.name.split(".")[-1].lower()
-    return file_extension in allowed_extensions
+    if file_extension in allowed_extensions:
+        return True
+    else:
+        return False

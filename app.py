@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from utils import apply_pca, validate_image #type:ignore
+from utils import apply_pca, validate_image
 import base64
 from streamlit_star_rating import st_star_rating
 import numpy as np
@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 import json
 from pathlib import Path
 import datetime
+import requests
 
-# Function to load images from URLs
+
 def load_image(url):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
@@ -19,6 +20,15 @@ def load_image(url):
 
 
 # Set page config
+st.set_page_config(
+    page_title="Image PCA - Do & Learn",
+    page_icon="📸",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+
+# Custom CSS for styling
 st.markdown("""
     <style>
     .body {background-color: #f2c698;}
@@ -145,7 +155,6 @@ def home():
         </footer>
                 """, unsafe_allow_html=True)
 
-
 def upload_image():
     st.title("📤 Upload Image")
     st.write("Upload your image here:")
@@ -169,28 +178,29 @@ def upload_image():
             num_components = st.slider("Number of Principal Components", min_value=1, max_value=500, value=10)
 
             if st.button("Compress Image"):
+                with st.spinner('Processing...'):  
                 # Compress the image using PCA
-                compressed_image_bytes = apply_pca(img, num_components)
-                compressed_image = Image.open(compressed_image_bytes)
+                    compressed_image_bytes = apply_pca(img, num_components)
+                    compressed_image = Image.open(compressed_image_bytes)
                 
                 # Display compressed image
-                st.image(compressed_image, caption="Compressed Image", use_column_width=True)
+                    st.image(compressed_image, caption="Compressed Image", use_column_width=True)
                 
                 
-                st.session_state['original_image'] = uploaded_image
-                st.session_state['compressed_image'] = compressed_image
-                st.session_state['no_of_components'] = num_components
+                    st.session_state['original_image'] = uploaded_image
+                    st.session_state['compressed_image'] = compressed_image_bytes
+                    st.session_state['no_of_components'] = num_components
                 
                 
                 # Save and download compressed image
-                st.markdown("### Save Compressed Image")
-                st.write("Click the button below to save and download the compressed image.")
+                    st.markdown("### Save Compressed Image")
+                    st.write("Click the button below to save and download the compressed image.")
                 
                 # Convert PIL Image to bytes
-                img_bytes = BytesIO()
-                compressed_image.save(img_bytes, format='JPEG')
-                img_bytes.seek(0)
-                #st.session_state['image'] = img_bytes.getvalue()
+                    img_bytes = BytesIO()
+                    compressed_image.save(img_bytes, format='JPEG')
+                    img_bytes.seek(0)
+                
                 
                 download_btn = st.download_button(
                     label="Download Compressed Image", 
@@ -208,11 +218,6 @@ def how_pca_works():
 
     # Title and explanation of PCA
     st.title("📊 How PCA Works")
-    
-    #original_image = Image.open(st.session_state['original_image'])
-    #no_of_components = st.session_state['no_of_components']
-    #st.image(original_image, "Original Image", use_column_width=True)
-    #st.write(f"Number of Components used for Compression: {no_of_components}")
     
     # Check button to display detailed explanation of the PCA function
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
@@ -387,7 +392,7 @@ def display_metrics(original_image, compressed_image):
     original_size = len(original_bytes.getvalue())
     compressed_size = len(compressed_bytes.getvalue())
 
-    compression_ratio = original_size / compressed_size
+    compression_ratio = compressed_size / original_size
 
     st.write(f"**Original Size:** {original_size / 1024:.2f} KB")
     st.write(f"**Compressed Size:** {compressed_size / 1024:.2f} KB")
@@ -442,6 +447,9 @@ def comparison():
     else:
         st.write("No images stored for comparison.")
         
+def learn_pca():
+    st.title("Learn PCA") 
+
 def load_feedback(file_path):
     if Path(file_path).exists():
         with open(file_path, 'r') as f:
@@ -488,7 +496,7 @@ def feedback():
 
 # Streamlit navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Upload Image", "How PCA Works", "Comparison", "Feedback"])
+page = st.sidebar.radio("Select a page:", ["Home", "Upload Image", "How PCA Works", "Comparison", "Learn PCA","Feedback"])
 
 if page == "Home":
     home()
@@ -498,10 +506,10 @@ elif page == "How PCA Works":
     how_pca_works()
 elif page == "Comparison":
     comparison()
+elif page == "Learn PCA":
+    learn_pca()
 elif page == "Feedback":
     feedback()
-    
-# footer.py
 
 def generate_footer():
     return """
