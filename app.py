@@ -24,6 +24,26 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Streamlit navigation
+def navigate_pages(pages):
+    # Initialize the session state
+    if 'page_index' not in st.session_state:
+        st.session_state['page_index'] = 0
+
+    # Set the radio button selection to the current page
+    page = st.sidebar.radio("Select a page:", pages, index=st.session_state.page_index)
+
+    # Return the current page
+    return page
+
+# Streamlit navigation
+st.sidebar.header(" NAVIGATION", divider='rainbow')
+
+pages = ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"]
+
+# Call the navigate_pages function and store the current page
+current_page = navigate_pages(pages)
+
 # Custom CSS for styling
 # Custom CSS for styling
 st.markdown("""
@@ -34,12 +54,16 @@ st.markdown("""
             background-size: cover;
 #        background-color: #add8e0;
     }
-    .sidebar .sidebar-content {
-        background-color: #fff;
+    .appview-container .sidebar .sidebar-content {
+            background-image: url("https://images.unsplash.com/photo-1528460033278-a6ba57020470?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAyfHxtYWNoaW5lJTIwbGVhcm5pbmclMjBsaWdodCUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D");
+            background-size: cover;
+#        background-color: #fff;
+    }
+    .sidebar .sidebar-header {
     }
     .stButton > button {
-        background-color: #4CAF50;
-        color: white;
+        background-color: #4CAFFE;
+        color: aliceblue;
     }
     .stSlider > div {
         color: #4CAF50;
@@ -152,6 +176,10 @@ def home():
                 """, unsafe_allow_html=True)
     # st.markdown(generate_footer(), unsafe_allow_html=True)
     
+    # Display the next button
+    if st.button("**Compress Image ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
     
 def upload_image():
     st.title("📤 Compress Image")
@@ -204,7 +232,11 @@ def upload_image():
                 
         else:
             st.error("Unsupported file format. Please upload a jpg, jpeg, or png file.")
-                        
+    # Display the next button
+    if st.button("**How PCA works!! ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
+
 def how_pca_works():
 
     # Title and explanation of PCA
@@ -372,6 +404,11 @@ def how_pca_works():
 
         if st.button('Apply PCA'):
             apply_pca(original_image, no_of_components)
+        
+        # Display the next button
+        if st.button("**Compare Images ⇨**", key="next"):
+            st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+            st.rerun()
             
 def display_metrics(original_image, compressed_image):
     original_bytes = BytesIO()
@@ -437,6 +474,11 @@ def comparison():
             
     else:
         st.write("No images stored for comparison.")
+    
+    # Display the next button
+    if st.button("**Learn PCA ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
         
 # Initialize SessionState
 def init_session():
@@ -464,6 +506,11 @@ def feedback():
         # Save feedback to session state
         session_state.feedback_data.append({"feedback": feedback_comment, "rating": stars})
         st.success("Thank you for your feedback!")
+
+    # Display the next button
+    if st.button("**View Feedback ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
     
 def view_Feedback():
     st.title("View Feedback")
@@ -479,30 +526,65 @@ def view_Feedback():
             st.markdown("---")
     else:
         st.write("No feedback has been submitted yet.")
+
+    # Display the next button
+    if st.button("**Return to Home Page ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
         
 def what_PCA():
     st.title("Learn PCA")
 
+    # Display the next button
+    if st.button("**Feedback ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
 
-# Streamlit navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"])
 
-if page == "Home":
+## Streamlit navigation
+#st.sidebar.header(" NAVIGATION", divider='rainbow')
+##st.sidebar.title("Navigation")
+##page = st.sidebar.radio("Select a page:", ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"])
+#
+#pages = ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","View Feedback"]
+#
+## Initialize the session state
+#if 'page_index' not in st.session_state:
+#    st.session_state['page_index'] = 0
+#
+## Reads
+##st.write(st.session_state.page_index)
+#state = st.session_state.get('page_index', 0)
+#
+##display the current page i.e. update the page
+#page = pages[st.session_state.page_index]
+#
+## Set the radio button selection to the current page
+#page = st.sidebar.radio("Select a page:", pages, index=st.session_state.page_index)
+#
+#page = st.sidebar.radio("Go to", pages, index=st.session_state.page_index)
+#st.sidebar.text(f"Curent Page: {page}")
+
+
+if current_page == "Home":
     home()
-elif page == "Compress Image":
+elif current_page == "Compress Image":
     upload_image()
-elif page == "How PCA Works (For Technerds!)":
+elif current_page == "How PCA Works (For Technerds!)":
     how_pca_works()
-elif page == "Compare Images":
+elif current_page == "Compare Images":
     comparison()
-elif page == "Learn PCA":
+elif current_page == "Learn PCA":
     what_PCA()
-elif page == "Feedback":
+elif current_page == "Feedback":
     feedback()
-elif page == "View Feedback":
+elif current_page == "View Feedback":
     view_Feedback()
 
+## Display the next button
+#if st.button("**Next Page**", key="next"):
+#    st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+#    st.rerun()
 # footer.py
 
 def generate_footer():
