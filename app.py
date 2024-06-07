@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from utils import apply_pca, validate_image
+from utils import apply_pca, validate_image 
 import base64
 from streamlit_star_rating import st_star_rating
 import numpy as np
