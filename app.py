@@ -254,47 +254,126 @@ def how_pca_works():
 
     # Title and explanation of PCA
     st.title("📊 How PCA Works (For Technerds!)")
-    
+
     show_pca_workings = st.checkbox("Show detailed workings of PCA")
 
-    if show_pca_workings:
-        st.markdown("""
-            ### Detailed Workings of PCA:
-            
-            1. **Convert image to numpy array**:
-            ```python
-            img_array = np.array(img)
-            ```
-            
-            2. **Splitting RGB channels**:
-            ```python
-            red_channel = img_array[:, :, 0]
-            green_channel = img_array[:, :, 1]
-            blue_channel = img_array[:, :, 2]
-            ```
-            
-            3. **Apply PCA on each channel**:
-            ```python
-            red_compressed = pca_compress(red_channel, num_components)
-            green_compressed = pca_compress(green_channel, num_components)
-            blue_compressed = pca_compress(blue_channel, num_components)
-            ```
-            
-            4. **Combine compressed channels into one image**:
-            ```python
-            compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
-            compressed_img = Image.fromarray(np.uint8(compressed_img_array))
-            ```
-            
-            5. **Function to perform PCA compression on a single channel**:
-            ```python
-            def pca_compress(channel, num_components):
+    with st.container(border=True):
+        if show_pca_workings:
+            st.markdown("""
+                ### Detailed Workings of PCA:
+
+                1. **Convert image to numpy array**:
+                ```python
+                img_array = np.array(img)
+                ```
+
+                2. **Splitting RGB channels**:
+                ```python
+                red_channel = img_array[:, :, 0]
+                green_channel = img_array[:, :, 1]
+                blue_channel = img_array[:, :, 2]
+                ```
+
+                3. **Apply PCA on each channel**:
+                ```python
+                red_compressed = pca_compress(red_channel, num_components)
+                green_compressed = pca_compress(green_channel, num_components)
+                blue_compressed = pca_compress(blue_channel, num_components)
+                ```
+
+                4. **Combine compressed channels into one image**:
+                ```python
+                compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
+                compressed_img = Image.fromarray(np.uint8(compressed_img_array))
+                ```
+
+                5. **Function to perform PCA compression on a single channel**:
+                ```python
+                def pca_compress(channel, num_components):
+                    # Subtract the mean from the data
+                    mean = np.mean(channel, axis=0)
+                    centered_data = channel - mean
+
+                    # Compute the covariance matrix
+                    cov_matrix = np.cov(centered_data, rowvar=False)
+
+                    # Compute the eigenvalues and eigenvectors of the covariance matrix
+                    eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
+
+                    # Sort eigenvalues and eigenvectors in descending order
+                    sorted_indices = np.argsort(eig_vals)[::-1]
+                    sorted_eig_vals = eig_vals[sorted_indices]
+                    sorted_eig_vecs = eig_vecs[:, sorted_indices]
+
+                    # Choose the number of principal components
+                    if num_components > len(sorted_eig_vals):
+                        num_components = len(sorted_eig_vals)
+                    elif num_components < 1:
+                        num_components = 1
+
+                    # Project the data onto the selected principal components
+                    projection_matrix = sorted_eig_vecs[:, :num_components]
+                    compressed_data = np.dot(centered_data, projection_matrix)
+
+                    # Reconstruct the data
+                    reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
+
+                    # Clip the values to [0, 255]
+                    reconstructed_data = np.clip(reconstructed_data, 0, 255)
+
+                    return reconstructed_data.astype(np.uint8)
+                ```
+            """)
+            if 'image' not in st.session_state:
+                st.error("Please upload an image to see the detailed workings of PCA.")
+                return
+            original_image = Image.open(BytesIO(st.session_state['image']))
+            no_of_components = st.session_state['no_of_components']
+
+            # Function to apply PCA on an image
+            def apply_pca(original_image, no_of_components):
+
+                # Retrieve the number of components from the session state
+                img_array = np.array(original_image.convert("RGB"))
+                st.image(img_array, caption='Original Image', use_column_width=True)
+
+                # Splitting RGB channels
+                red_channel = img_array[:, :, 0]
+                green_channel = img_array[:, :, 1]
+                blue_channel = img_array[:, :, 2]
+                st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
+                st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
+                st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
+
+                # Apply PCA on each channel
+                red_compressed = pca_compress(red_channel, no_of_components , 'Red Channel')
+                green_compressed = pca_compress(green_channel, no_of_components , 'Green Channel')
+                blue_compressed = pca_compress(blue_channel, no_of_components , 'Blue Channel')
+
+                # Combine compressed channels into one image
+                compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
+                compressed_img = Image.fromarray(np.uint8(compressed_img_array))
+                st.image(compressed_img, caption='Compressed Image', use_column_width=True)
+
+                # Convert compressed image to BytesIO for storage
+                compressed_img_bytes = BytesIO()
+                compressed_img.save(compressed_img_bytes, format='JPEG')
+                compressed_img_bytes.seek(0)
+                return compressed_img_bytes
+
+            # Function to perform PCA compression on a single channel
+            def pca_compress(channel, no_of_components, channel_name):
                 # Subtract the mean from the data
                 mean = np.mean(channel, axis=0)
                 centered_data = channel - mean
 
+                # Normalize centered data for display
+                centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
+                #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
+
                 # Compute the covariance matrix
                 cov_matrix = np.cov(centered_data, rowvar=False)
+                st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
 
                 # Compute the eigenvalues and eigenvectors of the covariance matrix
                 eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
@@ -304,119 +383,44 @@ def how_pca_works():
                 sorted_eig_vals = eig_vals[sorted_indices]
                 sorted_eig_vecs = eig_vecs[:, sorted_indices]
 
+                # Show sorted eigenvalues and eigenvectors
+                st.text(f'Step in {channel_name}: Sorted Eigenvalues\n{sorted_eig_vals}')
+                st.text(f'Step in {channel_name}: Sorted Eigenvectors\n{sorted_eig_vecs}')
+
                 # Choose the number of principal components
-                if num_components > len(sorted_eig_vals):
-                    num_components = len(sorted_eig_vals)
-                elif num_components < 1:
-                    num_components = 1
+                if no_of_components > len(sorted_eig_vals):
+                    no_of_components = len(sorted_eig_vals)
+                elif no_of_components < 1:
+                    no_of_components = 1
 
                 # Project the data onto the selected principal components
-                projection_matrix = sorted_eig_vecs[:, :num_components]
+                projection_matrix = sorted_eig_vecs[:, :no_of_components]
                 compressed_data = np.dot(centered_data, projection_matrix)
+
+                # Normalize compressed data for display
+                compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
+                #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
 
                 # Reconstruct the data
                 reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
 
-                # Clip the values to [0, 255]
+                # Normalize reconstructed data for display
+                reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
+                st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
+
+                # Clip the values to [0, 255] for the final output
                 reconstructed_data = np.clip(reconstructed_data, 0, 255)
 
                 return reconstructed_data.astype(np.uint8)
-            ```
-        """)
-        original_image = Image.open(BytesIO(st.session_state['image']))
-        no_of_components = st.session_state['no_of_components']
-        
-        # Function to apply PCA on an image
-        def apply_pca(original_image, no_of_components):
-            
-            # Retrieve the number of components from the session state
-            img_array = np.array(original_image.convert("RGB"))
-            st.image(img_array, caption='Original Image', use_column_width=True)
-            
-            # Splitting RGB channels
-            red_channel = img_array[:, :, 0]
-            green_channel = img_array[:, :, 1]
-            blue_channel = img_array[:, :, 2]
-            st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
-            st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
-            st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
 
-            # Apply PCA on each channel
-            red_compressed = pca_compress(red_channel, no_of_components , 'Red Channel')
-            green_compressed = pca_compress(green_channel, no_of_components , 'Green Channel')
-            blue_compressed = pca_compress(blue_channel, no_of_components , 'Blue Channel')
 
-            # Combine compressed channels into one image
-            compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
-            compressed_img = Image.fromarray(np.uint8(compressed_img_array))
-            st.image(compressed_img, caption='Compressed Image', use_column_width=True)
+            if st.button('Apply PCA'):
+                apply_pca(original_image, no_of_components)
 
-            # Convert compressed image to BytesIO for storage
-            compressed_img_bytes = BytesIO()
-            compressed_img.save(compressed_img_bytes, format='JPEG')
-            compressed_img_bytes.seek(0)
-            return compressed_img_bytes
-
-        # Function to perform PCA compression on a single channel
-        def pca_compress(channel, no_of_components, channel_name):
-            # Subtract the mean from the data
-            mean = np.mean(channel, axis=0)
-            centered_data = channel - mean
-            
-            # Normalize centered data for display
-            centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
-            #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
-
-            # Compute the covariance matrix
-            cov_matrix = np.cov(centered_data, rowvar=False)
-            st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
-
-            # Compute the eigenvalues and eigenvectors of the covariance matrix
-            eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
-
-            # Sort eigenvalues and eigenvectors in descending order
-            sorted_indices = np.argsort(eig_vals)[::-1]
-            sorted_eig_vals = eig_vals[sorted_indices]
-            sorted_eig_vecs = eig_vecs[:, sorted_indices]
-
-            # Show sorted eigenvalues and eigenvectors
-            st.text(f'Step in {channel_name}: Sorted Eigenvalues\n{sorted_eig_vals}')
-            st.text(f'Step in {channel_name}: Sorted Eigenvectors\n{sorted_eig_vecs}')
-
-            # Choose the number of principal components
-            if no_of_components > len(sorted_eig_vals):
-                no_of_components = len(sorted_eig_vals)
-            elif no_of_components < 1:
-                no_of_components = 1
-
-            # Project the data onto the selected principal components
-            projection_matrix = sorted_eig_vecs[:, :no_of_components]
-            compressed_data = np.dot(centered_data, projection_matrix)
-            
-            # Normalize compressed data for display
-            compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
-            #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
-
-            # Reconstruct the data
-            reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
-            
-            # Normalize reconstructed data for display
-            reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
-            st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
-
-            # Clip the values to [0, 255] for the final output
-            reconstructed_data = np.clip(reconstructed_data, 0, 255)
-
-            return reconstructed_data.astype(np.uint8)
-        
-
-        if st.button('Apply PCA'):
-            apply_pca(original_image, no_of_components)
-        
-        # Display the next button
-        if st.button("**Compare Images ⇨**", key="next"):
-            st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-            st.rerun()
+    # Display the next button
+    if st.button("**Compare Images ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
             
 def display_metrics(original_image, compressed_image):
     original_bytes = BytesIO()
@@ -563,10 +567,47 @@ def what_PCA():
     <p style="text-align:justify", class="big-paragraph">a.	Eigen Vector</p>
     <p style="text-align:justify", class="big-paragraph">b. Eigen Value</p>
     <p class= "big_paragraph">We know the Arabic numerals 0, 1, 2, …; and if we begin to arrange these numbers in the form of rows and columns and then add them like we add numerals and multiply them like we add numerals and multiply them like we do for numbers as follows:</p>
-
+    """, unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 2 & 1 \\ 3 & 4 \end{bmatrix} + \begin{bmatrix} 8 & 1 \\ 9 & 6 \end{bmatrix} = \begin{bmatrix} 10 & 2 \\ 12 & 10 \end{bmatrix}\tag{1}""")
+    st.markdown("""
+    <p class="big_paragraph">Similarly, we can multiply them as follows:</p>
+    """, unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \times \begin{bmatrix} 1 & 1 \\ 1 & 2 \end{bmatrix} = \begin{bmatrix} (1×1)+(2×1) & (1×1)+(2×2) \\ (3×1)+(4×1) & (3×1)+(4×2) \end{bmatrix} = \begin{bmatrix} 3 & 5 \\ 7 & 11 \end{bmatrix}\tag{2}""")
+    st.markdown("""
+                <p class="big_paragraph">What do we realise from equation (i) & (ii) above! The objects on the RHS are new matrices after adding or multiplying two matrices the way we have for numbers.</p>
+                <p class="big_paragraph">Before we proceed, we can define one more multiplication of a matrix with a scalar as follows:</p>
                 """, unsafe_allow_html=True)
-    #img = load_image_from_path("Resources//img1.png")
-    #st.image(img, caption="Addition of two matrices",width=500)              
+    st.latex(r"""\begin{bmatrix} 5 & 1 \\ 6 & 1 \end{bmatrix} \times 2 = \begin{bmatrix} 10 & 2 \\ 12 & 2 \end{bmatrix}\tag{3}""")
+    st.markdown("""
+                <p class="big_paragraph">However, things start getting interesting when we start multiplying a matrix to a 𝕍𝔼ℂ𝕋𝕆ℝ. What does 𝕍𝔼ℂ𝕋𝕆ℝ mean.</p>
+                <p class="big_paragraph">Well, any matrix with one row or column can be called as a vector. Graphically one can say that a matrix formed by the components of a vector in mutually perpendicular directions can be said to be a 𝕍𝔼ℂ𝕋𝕆ℝ.</p>
+                <p class="big_paragraph">e.g.</p>
+                """, unsafe_allow_html=True)
+    st.image("Resources/img1.png", width=500)
+    st.markdown("""<p class="big-paragraph", style="font-weight: bold;">•	Let’s play and see what matrix does to ‘VECTORS’?</p>""", unsafe_allow_html=True)
+    st.latex(r"""Consider\space a\space matrix \begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} and\space a\space vector \begin{bmatrix} 1 \\ 2 \end{bmatrix}.""")
+    st.markdown("""<p class="big_paragraph">Now, let’s multiply both of them and see what happens</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 3×1 + (-2)×1 \\ -1×1 + 4×1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
+    st.markdown("""<p class="big_paragraph">So, we put a vector as input and we get another vector as output but, that is scaled and rotated as compared to the original one. This is what it means that ‘Matrix Does Sometimes Interesting to Vectors.’</p>""", unsafe_allow_html=True)
+    st.image("Resources/img2.png", width=500)
+    st.markdown("""<p class="big_paragraph">Different matrices can scale and rotate the vectors into different vectors at all. Let us take a few following examples to understand this rotation dance:</p>""", unsafe_allow_html=True)
+    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix, if multiplied with a vector, will rotate the given vector by 90॰.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} -1 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img3.png", width=500)
+    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix will scale the input matrix by a factor of 2, since the diagonal elements contain 2.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img4.png", width=500)
+    st.markdown("""<p class="big_paragraph">So, different input matrices get scaled and rotated differently based on how we operate upon them. However, all the transformation are linear as in any vector on the same line as one of those inputs will be mapped on the same line as the corresponding outputs.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
+    st.image("Resources/img5.png", width=500)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 3 \\ 3 \end{bmatrix} = \begin{bmatrix} 3 \\ 9 \end{bmatrix}""")
+    st.image("Resources/img6.png", width=500)
+    st.latex(r"""\text{Now consider a matrix A = }\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \text{and calculate it’s eigen value and eigen vectors which can be as follows:}""")
+    st.latex(r"""\text{Eigen values come out to be 2 and 5 respectively and the corresponding eigen vectors are }\begin{bmatrix} 2 \\ 1 \end{bmatrix} \text{and} \begin{bmatrix} 1 \\ -1 \end{bmatrix}.""")
+    st.latex(r"""\text{Now, let’s see what happens when we multiply the matrix A with it’s eigen vectors.}""")
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img7.png", width=500)
+    st.markdown("""<p class="big_paragraph">So, what we notice is that, we took a vector A.  We called it an eigen vector of matrix A. Then when we operate this vector with the matrix A, no change occurred in the direction although the same matrix A was responsible for rotating and scaling other vectors earlier. So, any vector that is only scaled by a matrix is called an <b>Eigen Vactor</b> <i>(Eigen in German means ‘Same’)</i> of that matrix, and how much the vector is scaled by is called its ‘Eigen Value.’ So, Eigen Vectors and Eigen Values are the vectors and values that remain unchanged in direction and only get scaled when operated upon by a matrix.</p>""", unsafe_allow_html=True)
     
     # Display the next button
     if st.button("**Feedback ⇨**", key="next"):
