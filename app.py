@@ -188,65 +188,70 @@ def home():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
     
+import streamlit as st
+from PIL import Image
+from io import BytesIO
+import numpy as np
+
 def upload_image():
     st.title("📤 Upload Image")
     st.write("Upload your image here:")
 
     # Upload the image
-    uploaded_image= st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
     if uploaded_image:
         if validate_image(uploaded_image):
             st.image(uploaded_image, caption="Original Image", use_column_width=True)
-            
+
             # Load the image
             img = Image.open(uploaded_image)
             img_byte = BytesIO()
             img.save(img_byte, format='JPEG')
             img_byte.seek(0)
             st.session_state['image'] = img_byte.getvalue()
-        
-            
+
+            # Calculate the maximum number of principal components
+            img_array = np.array(img)
+            max_components = min(img_array.shape[0], img_array.shape[1])
+            st.session_state['max_components'] = max_components
+
             # Slider for choosing number of components
-            num_components = st.slider("Number of Principal Components", min_value=1, max_value=500, value=10)
+            num_components = st.slider("Number of Principal Components", min_value=1, max_value=max_components, value=10)
 
             if st.button("Compress Image"):
-                with st.spinner('Processing...'):  
-                # Compress the image using PCA
+                with st.spinner('Processing...'):
+                    # Compress the image using PCA
                     compressed_image_bytes = apply_pca(img, num_components)
                     compressed_image = Image.open(compressed_image_bytes)
-                
-                # Display compressed image
+
+                    # Display compressed image
                     st.image(compressed_image, caption="Compressed Image", use_column_width=True)
-                
-                
+
                     st.session_state['original_image'] = uploaded_image
                     st.session_state['compressed_image'] = compressed_image_bytes
                     st.session_state['no_of_components'] = num_components
-                
-                
-                # Save and download compressed image
+
+                    # Save and download compressed image
                     st.markdown("### Save Compressed Image")
                     st.write("Click the button below to save and download the compressed image.")
-                
-                # Convert PIL Image to bytes
+
+                    # Convert PIL Image to bytes
                     img_bytes = BytesIO()
                     compressed_image.save(img_bytes, format='JPEG')
                     img_bytes.seek(0)
-                
-                
-                download_btn = st.download_button(
-                    label="Download Compressed Image", 
-                    data=img_bytes, 
-                    file_name="compressed_image.jpg", 
-                    mime="image/jpeg", 
-                    key="download_compressed_img"
-                )
-                
-    
+
+                    download_btn = st.download_button(
+                        label="Download Compressed Image",
+                        data=img_bytes,
+                        file_name="compressed_image.jpg",
+                        mime="image/jpeg",
+                        key="download_compressed_img"
+                    )
+
         else:
             st.error("Unsupported file format. Please upload a jpg, jpeg, or png file.")
-
+            
     # Display the next button
     if st.button("**How PCA works!! ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
@@ -424,14 +429,16 @@ def how_pca_works():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
 
-def display_metrics(original_image, compressed_image):
-    original_bytes = BytesIO()
+def display_metrics(original_file, compressed_image):
+    # Get the size of the original uploaded file
+    original_size = original_file.size
+
+    # Ensure the compressed image is read from BytesIO if necessary
+    if isinstance(compressed_image, BytesIO):
+        compressed_image = Image.open(compressed_image)
+
     compressed_bytes = BytesIO()
-
-    original_image.save(original_bytes, format='JPEG')
     compressed_image.save(compressed_bytes, format='JPEG')
-
-    original_size = len(original_bytes.getvalue())
     compressed_size = len(compressed_bytes.getvalue())
 
     compression_ratio = original_size / compressed_size
@@ -440,13 +447,13 @@ def display_metrics(original_image, compressed_image):
     st.write(f"**Compressed Size:** {compressed_size / 1024:.2f} KB")
     st.write(f"**Compression Ratio:** {compression_ratio:.2f}")
 
-    original_array = np.array(original_image)
+    original_array = np.array(Image.open(original_file))
     compressed_array = np.array(compressed_image)
 
     # Compute SSIM with explicit window size and channel axis
     win_size = min(original_array.shape[0], original_array.shape[1], compressed_array.shape[0], compressed_array.shape[1], 7)
     ssim_index = ssim(original_array, compressed_array, win_size=win_size, channel_axis=-1)
-    
+
     st.write(f"**SSIM (Structural Similarity Index):** {ssim_index:.4f}")
 
 def display_histogram(image, title):
@@ -659,7 +666,7 @@ def comparison():
             st.image(compressed_image, caption="Compressed Image", use_column_width=True)
         
         st.subheader("Metrics")
-        display_metrics(original_image, compressed_image)
+        display_metrics(st.session_state['original_image'], st.session_state['compressed_image'])
         
         st.subheader("Histograms")
         col3, col4 = st.columns(2)

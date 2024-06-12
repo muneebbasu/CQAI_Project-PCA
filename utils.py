@@ -26,7 +26,7 @@ def apply_pca(img, num_components):
     # Convert compressed image to BytesIO for storage
     compressed_img_bytes = BytesIO()
     compressed_img.save(compressed_img_bytes, format='JPEG')
-    compressed_img_bytes.seek(0) 
+    compressed_img_bytes.seek(0)
     return compressed_img_bytes
 
 # Function to perform PCA compression on a single channel
