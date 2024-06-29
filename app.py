@@ -3,7 +3,6 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 from utils import apply_pca, validate_image #type:ignore
-import base64
 from streamlit_star_rating import st_star_rating
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
@@ -212,7 +211,7 @@ def upload_image():
             st.session_state['max_components'] = max_components
 
             # Slider for choosing number of components
-            num_components = st.slider("Number of Principal Components", min_value=1, max_value=max_components, value=10)
+            num_components = st.slider("Number of Principal Components", min_value=1, max_value=500, value=10)
 
             if st.button("Compress Image"):
                 with st.spinner('Processing...'):
