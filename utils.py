@@ -72,3 +72,5 @@ def validate_image(uploaded_file):
         return True
     else:
         return False
+    
+    
