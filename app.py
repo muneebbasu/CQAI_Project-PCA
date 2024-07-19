@@ -49,7 +49,7 @@ def navigate_pages(pages):
 # Streamlit navigation
 st.sidebar.header(" NAVIGATION", divider='rainbow')
 
-pages = ["Home", "Compress Image", "How PCA Works (For Technerds!)", "Compare Images", "Learn PCA","Feedback","Background Remover"]
+pages = ["Home", "Compress Image", "How PCA Works", "Compare Images", "Learn PCA","Background Remover","Feedback"]
 
 # Call the navigate_pages function and store the current page
 current_page = navigate_pages(pages)
@@ -781,7 +781,7 @@ def what_PCA():
         }
     </style>
     <p class="sub", style="font-size: 40px;">What is PCA?</p>
-    <p class="big-paragraph">Two main mathematical vectors –</p>
+    <p class="big-paragraph">Two main mathematical actors –</p>
     <p style="text-align:justify", class="big-paragraph">a.	Eigen Vector</p>
     <p style="text-align:justify", class="big-paragraph">b. Eigen Value</p>
     <p class= "big_paragraph">We know the Arabic numerals 0, 1, 2, …; and if we begin to arrange these numbers in the form of rows and columns and then add them like we add numerals and multiply them like we add numerals and multiply them like we do for numbers as follows:</p>
@@ -825,7 +825,7 @@ def what_PCA():
     st.latex(r"""\text{Now, let’s see what happens when we multiply the matrix A with it’s eigen vectors.}""")
     st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
     st.image("Resources/img7.png", width=500)
-    st.markdown("""<p class="big_paragraph">So, what we notice is that, we took a vector A.  We called it an eigen vector of matrix A. Then when we operate this vector with the matrix A, no change occurred in the direction although the same matrix A was responsible for rotating and scaling other vectors earlier. So, any vector that is only scaled by a matrix is called an <b>Eigen Vactor</b> <i>(Eigen in German means ‘Same’)</i> of that matrix, and how much the vector is scaled by is called its ‘Eigen Value.’ So, Eigen Vectors and Eigen Values are the vectors and values that remain unchanged in direction and only get scaled when operated upon by a matrix.</p>""", unsafe_allow_html=True)
+    st.markdown("""<p class="big_paragraph">So, what we notice is that, we took a vector A.  We called it an eigen vector of matrix A. Then when we operate this vector with the matrix A, no change occurred in the direction although the same matrix A was responsible for rotating and scaling other vectors earlier. So, any vector that is only scaled by a matrix is called an <b>Eigen Vactor</b> <i>(Eigen in German means ‘Special’)</i> of that matrix, and how much the vector is scaled by is called its ‘Eigen Value.’ So, Eigen Vectors and Eigen Values are the vectors and values that remain unchanged in direction and only get scaled when operated upon by a matrix.</p>""", unsafe_allow_html=True)
     
     # Display the next button
     if st.button("**Feedback ⇨**", key="next"):
@@ -878,7 +878,7 @@ if current_page == "Home":
     home()
 elif current_page == "Compress Image":
     upload_image()
-elif current_page == "How PCA Works (For Technerds!)":
+elif current_page == "How PCA Works":
     how_pca_works()
 elif current_page == "Compare Images":
     comparison()
