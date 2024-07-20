@@ -710,11 +710,6 @@ def comparison():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
-import streamlit as st
-import json
-import datetime
-from pathlib import Path
-from st_star_rating import st_star_rating
 
 def load_feedback(file_path):
     if Path(file_path).exists():
