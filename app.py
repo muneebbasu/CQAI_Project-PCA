@@ -710,6 +710,11 @@ def comparison():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
+import streamlit as st
+import json
+import datetime
+from pathlib import Path
+from st_star_rating import st_star_rating
 
 def load_feedback(file_path):
     if Path(file_path).exists():
@@ -740,7 +745,7 @@ def feedback():
             }
             file_path = 'feedback.json'
             feedbacks = load_feedback(file_path)
-            feedbacks.append(feedback_data)
+            feedbacks.insert(0, feedback_data)  # Insert at the beginning
             save_feedback(file_path, feedbacks)
             st.success("Thank you for your feedback!")
         else:
@@ -758,6 +763,7 @@ def feedback():
     if st.button("**Return to Home Page ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
+
         
 def what_PCA():
     st.title("Learn PCA")
