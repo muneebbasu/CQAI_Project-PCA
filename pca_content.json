@@ -1,0 +1,116 @@
+{
+    "tutorials": [
+        {
+            "title": "What is PCA?",
+            "content": "Two main mathematical actors are Eigen Vector and Eigen Value. We know the Arabic numerals 0, 1, 2, ...; and if we begin to arrange these numbers in the form of rows and columns and then add them like we add numerals and multiply them like we add numerals and multiply them like we do for numbers as follows:",
+            "image": "Resources/img1.png",
+            "equations": [
+                {
+                    "latex": "\\begin{bmatrix} 2 & 1 \\\\ 3 & 4 \\end{bmatrix} + \\begin{bmatrix} 8 & 1 \\\\ 9 & 6 \\end{bmatrix} = \\begin{bmatrix} 10 & 2 \\\\ 12 & 10 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix} \\times \\begin{bmatrix} 1 & 1 \\\\ 1 & 2 \\end{bmatrix} = \\begin{bmatrix} (1×1)+(2×1) & (1×1)+(2×2) \\\\ (3×1)+(4×1) & (3×1)+(4×2) \\end{bmatrix} = \\begin{bmatrix} 3 & 5 \\\\ 7 & 11 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 5 & 1 \\\\ 6 & 1 \\end{bmatrix} \\times 2 = \\begin{bmatrix} 10 & 2 \\\\ 12 & 2 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 3 & -2 \\\\ -1 & 4 \\end{bmatrix} \\times \\begin{bmatrix} 1 \\\\ 2 \\end{bmatrix} = \\begin{bmatrix} 3×1 + (-2)×1 \\\\ -1×1 + 4×1 \\end{bmatrix} = \\begin{bmatrix} 1 \\\\ 3 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix} \\times \\begin{bmatrix} 2 \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} -1 \\\\ 2 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 2 & 0 \\\\ 0 & 2 \\end{bmatrix} \\times \\begin{bmatrix} 2 \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} 4 \\\\ 2 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 3 & -2 \\\\ -1 & 4 \\end{bmatrix} \\times \\begin{bmatrix} 1 \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} 1 \\\\ 3 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 3 & -2 \\\\ -1 & 4 \\end{bmatrix} \\times \\begin{bmatrix} 3 \\\\ 3 \\end{bmatrix} = \\begin{bmatrix} 3 \\\\ 9 \\end{bmatrix}"
+                },
+                {
+                    "latex": "\\text{Now consider a matrix A = }\\begin{bmatrix} 3 & -2 \\\\ -1 & 4 \\end{bmatrix} \\text{and calculate its eigenvalue and eigenvectors which can be as follows:}"
+                },
+                {
+                    "latex": "\\text{Eigenvalues come out to be 2 and 5 respectively and the corresponding eigenvectors are }\\begin{bmatrix} 2 \\\\ 1 \\end{bmatrix} \\text{and }\\begin{bmatrix} 1 \\\\ -1 \\end{bmatrix}."
+                },
+                {
+                    "latex": "\\text{Now, let’s see what happens when we multiply the matrix A with its eigenvectors.}"
+                },
+                {
+                    "latex": "\\begin{bmatrix} 3 & -2 \\\\ -1 & 4 \\end{bmatrix} \\times \\begin{bmatrix} 2 \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} 4 \\\\ 2 \\end{bmatrix}"
+                }
+            ]
+        },
+        {
+            "title": "PCA Step-by-Step",
+            "content": "Let's go through the steps of PCA: 1. Standardize the Data 2. Obtain the Covariance Matrix 3. Compute the Eigenvalues and Eigenvectors of the Covariance Matrix 4. Sort Eigenvalues and Eigenvectors 5. Form the Feature Vector 6. Recast the Data along the Principal Components",
+            "image": "Resources/img2.png",
+            "equations": [
+                {
+                    "latex": "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix} \\begin{bmatrix} x \\\\ y \\end{bmatrix} = \\begin{bmatrix} ax + by \\\\ cx + dy \\end{bmatrix}"
+                },
+                {
+                    "latex": "Cov(X, Y) = \\frac{\\sum (X_i - \\bar{X})(Y_i - \\bar{Y})}{N-1}"
+                },
+                {
+                    "latex": "Var(X) = \\frac{\\sum (X_i - \\bar{X})^2}{N-1}"
+                },
+                {
+                    "latex": "\\mathbf{Cov} = \\begin{bmatrix} \\text{Var}(X) & \\text{Cov}(X,Y) \\\\ \\text{Cov}(Y,X) & \\text{Var}(Y) \\end{bmatrix}"
+                }
+            ]
+        }
+    ],
+    "quizzes": [
+        {
+            "question": "What does PCA stand for?",
+            "options": ["Principal Component Analysis", "Partial Component Analysis", "Primary Component Analysis"],
+            "answer": "Principal Component Analysis"
+        },
+        {
+            "question": "What is an Eigen Value?",
+            "options": ["A vector that remains unchanged", "A scalar that scales the eigen vector", "A matrix transformation result"],
+            "answer": "A scalar that scales the eigen vector"
+        },
+        {
+            "question": "Which matrix operation scales the input vector?",
+            "options": ["Addition", "Subtraction", "Multiplication"],
+            "answer": "Multiplication"
+        },
+        {
+            "question": "What is the first step in PCA?",
+            "options": ["Compute the Eigenvalues", "Obtain the Covariance Matrix", "Standardize the Data"],
+            "answer": "Standardize the Data"
+        },
+        {
+            "question": "What does the Covariance Matrix represent?",
+            "options": ["Variance and covariance of the dataset features", "Mean of the dataset", "Principal components"],
+            "answer": "Variance and covariance of the dataset features"
+        },
+        {
+            "question": "What is the purpose of sorting the Eigenvalues?",
+            "options": ["To identify the largest components", "To find the smallest components", "To compute the mean"],
+            "answer": "To identify the largest components"
+        }
+    ],
+    "faqs": [
+        {
+            "question": "What is an Eigen Value?",
+            "answer": "An Eigen Value is a scalar that indicates how much a corresponding Eigen Vector is scaled during a transformation."
+        },
+        {
+            "question": "Why do we standardize the data in PCA?",
+            "answer": "Standardizing the data ensures that each feature contributes equally to the analysis, preventing features with larger scales from dominating the results."
+        },
+        {
+            "question": "How is the covariance matrix used in PCA?",
+            "answer": "The covariance matrix captures the variance and covariance of the dataset features, which is then used to identify the principal components."
+        },
+        {
+            "question": "What are principal components?",
+            "answer": "Principal components are the directions in which the data varies the most. They are identified by the Eigenvectors of the covariance matrix."
+        }
+    ]
+}
