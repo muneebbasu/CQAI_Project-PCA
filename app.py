@@ -759,70 +759,73 @@ def feedback():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
 
-def load_pca_content():
-    with open("pca_content.json", "r") as file:
-        content = json.load(file)
-    return content
-
 def what_PCA():
     st.title("Learn PCA")
-    content = load_pca_content()
-    tutorials = content['tutorials']
-    quizzes = content['quizzes']
-    faqs = content['faqs']
-    
-    if 'tutorial_index' not in st.session_state:
-        st.session_state.tutorial_index = 0
-    if 'quiz_index' not in st.session_state:
-        st.session_state.quiz_index = 0 
-        
 
-    def display_tutorial(index):
-        tutorial = tutorials[index]
-        st.subheader(tutorial['title'])
-        st.markdown(tutorial['content'])
-        for eq in tutorial['equations']:
-            st.latex(eq['latex'])
-        if 'image' in tutorial:
-            st.image(tutorial['image'], width=500)
-
-    def next_tutorial():
-        if st.session_state.tutorial_index < len(tutorials) - 1:
-            st.session_state.tutorial_index += 1
-        st.session_state.quiz_index = 0
-        st.session_state.quiz_answer = 0
-        st.experimental_rerun()
-
-    def display_quiz(index):
-        quiz = quizzes[index]
-        st.subheader("Quiz")
-        st.write(quiz['question'])
-        options = quiz['options']
-        selected_option = st.radio("Choose an option", options, key=f"quiz_{index}")
-        if st.button("Submit Answer", key=f"submit_{index}"):
-            st.session_state.quiz_answer = selected_option
-            if selected_option == quiz['answer']:
-                st.success("Correct!")
-            else:
-                st.error("Incorrect. The correct answer is: " + quiz['answer'])
-                st.stop()  # Stop execution to prevent access to the next tutorial
-
-    display_tutorial(st.session_state.tutorial_index)
-
-    if st.session_state.quiz_answer is None:
-        display_quiz(st.session_state.quiz_index)
-    elif st.session_state.quiz_index < 2:  # Limit to 3 quizzes per tutorial
-        st.session_state.quiz_index += 1
-        st.session_state.quiz_answer = None
-        st.experimental_rerun()
-    elif st.session_state.tutorial_index < len(tutorials) - 1:
-        if st.button("Next Tutorial"):
-            next_tutorial()
-
-    st.subheader("FAQs")
-    for faq in faqs:
-        st.markdown(f"**{faq['question']}**")
-        st.markdown(f"{faq['answer']}")
+    st.markdown("""
+    <style>
+        .big-paragraph {
+            font-size: 22px;
+            line-height: 1.5;
+            margin-top: 20px;
+            text-align: left;
+            }
+        .sub {
+            font-family: 'Merriweather', serif; /* Professional and beautiful font */
+            text-align: center;
+            font-size: 23px;
+            font-weight: bold; /* Making the text bold */
+            margin: 2px 0; /* Adding margin */
+            line-height: 1.5; /* Adjusting line height */
+            letter-spacing: 1.3px; /* Adjusting letter spacing */
+        }
+    </style>
+    <p class="sub", style="font-size: 40px;">What is PCA?</p>
+    <p class="big-paragraph">Two main mathematical actors –</p>
+    <p style="text-align:justify", class="big-paragraph">a.	Eigen Vector</p>
+    <p style="text-align:justify", class="big-paragraph">b. Eigen Value</p>
+    <p class= "big_paragraph">We know the Arabic numerals 0, 1, 2, …; and if we begin to arrange these numbers in the form of rows and columns and then add them like we add numerals and multiply them like we add numerals and multiply them like we do for numbers as follows:</p>
+    """, unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 2 & 1 \\ 3 & 4 \end{bmatrix} + \begin{bmatrix} 8 & 1 \\ 9 & 6 \end{bmatrix} = \begin{bmatrix} 10 & 2 \\ 12 & 10 \end{bmatrix}\tag{1}""")
+    st.markdown("""
+    <p class="big_paragraph">Similarly, we can multiply them as follows:</p>
+    """, unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \times \begin{bmatrix} 1 & 1 \\ 1 & 2 \end{bmatrix} = \begin{bmatrix} (1×1)+(2×1) & (1×1)+(2×2) \\ (3×1)+(4×1) & (3×1)+(4×2) \end{bmatrix} = \begin{bmatrix} 3 & 5 \\ 7 & 11 \end{bmatrix}\tag{2}""")
+    st.markdown("""
+                <p class="big_paragraph">What do we realise from equation (i) & (ii) above! The objects on the RHS are new matrices after adding or multiplying two matrices the way we have for numbers.</p>
+                <p class="big_paragraph">Before we proceed, we can define one more multiplication of a matrix with a scalar as follows:</p>
+                """, unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 5 & 1 \\ 6 & 1 \end{bmatrix} \times 2 = \begin{bmatrix} 10 & 2 \\ 12 & 2 \end{bmatrix}\tag{3}""")
+    st.markdown("""
+                <p class="big_paragraph">However, things start getting interesting when we start multiplying a matrix to a 𝕍𝔼ℂ𝕋𝕆ℝ. What does 𝕍𝔼ℂ𝕋𝕆ℝ mean.</p>
+                <p class="big_paragraph">Well, any matrix with one row or column can be called as a vector. Graphically one can say that a matrix formed by the components of a vector in mutually perpendicular directions can be said to be a 𝕍𝔼ℂ𝕋𝕆ℝ.</p>
+                <p class="big_paragraph">e.g.</p>
+                """, unsafe_allow_html=True)
+    st.image("Resources/img1.png", width=500)
+    st.markdown("""<p class="big-paragraph", style="font-weight: bold;">•	Let’s play and see what matrix does to ‘VECTORS’?</p>""", unsafe_allow_html=True)
+    st.latex(r"""Consider\space a\space matrix \begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} and\space a\space vector \begin{bmatrix} 1 \\ 2 \end{bmatrix}.""")
+    st.markdown("""<p class="big_paragraph">Now, let’s multiply both of them and see what happens</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 3×1 + (-2)×1 \\ -1×1 + 4×1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
+    st.markdown("""<p class="big_paragraph">So, we put a vector as input and we get another vector as output but, that is scaled and rotated as compared to the original one. This is what it means that ‘Matrix Does Sometimes Interesting to Vectors.’</p>""", unsafe_allow_html=True)
+    st.image("Resources/img2.png", width=500)
+    st.markdown("""<p class="big_paragraph">Different matrices can scale and rotate the vectors into different vectors at all. Let us take a few following examples to understand this rotation dance:</p>""", unsafe_allow_html=True)
+    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix, if multiplied with a vector, will rotate the given vector by 90॰.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} -1 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img3.png", width=500)
+    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix will scale the input matrix by a factor of 2, since the diagonal elements contain 2.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img4.png", width=500)
+    st.markdown("""<p class="big_paragraph">So, different input matrices get scaled and rotated differently based on how we operate upon them. However, all the transformation are linear as in any vector on the same line as one of those inputs will be mapped on the same line as the corresponding outputs.</p>""", unsafe_allow_html=True)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
+    st.image("Resources/img5.png", width=500)
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 3 \\ 3 \end{bmatrix} = \begin{bmatrix} 3 \\ 9 \end{bmatrix}""")
+    st.image("Resources/img6.png", width=500)
+    st.latex(r"""\text{Now consider a matrix A = }\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \text{and calculate it’s eigen value and eigen vectors which can be as follows:}""")
+    st.latex(r"""\text{Eigen values come out to be 2 and 5 respectively and the corresponding eigen vectors are }\begin{bmatrix} 2 \\ 1 \end{bmatrix} \text{and} \begin{bmatrix} 1 \\ -1 \end{bmatrix}.""")
+    st.latex(r"""\text{Now, let’s see what happens when we multiply the matrix A with it’s eigen vectors.}""")
+    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
+    st.image("Resources/img7.png", width=500)
+    st.markdown("""<p class="big_paragraph">So, what we notice is that, we took a vector A.  We called it an eigen vector of matrix A. Then when we operate this vector with the matrix A, no change occurred in the direction although the same matrix A was responsible for rotating and scaling other vectors earlier. So, any vector that is only scaled by a matrix is called an <b>Eigen Vactor</b> <i>(Eigen in German means ‘Special’)</i> of that matrix, and how much the vector is scaled by is called its ‘Eigen Value.’ So, Eigen Vectors and Eigen Values are the vectors and values that remain unchanged in direction and only get scaled when operated upon by a matrix.</p>""", unsafe_allow_html=True)
 
     # Display the next button
     if st.button("**Feedback ⇨**", key="next"):
