@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import cv2
 import io
+import fitz  # PyMuPDF
+import os
 from skimage.color import rgb2lab, lab2rgb
 import requests
 import datetime
@@ -249,7 +251,7 @@ def upload_image():
             st.error("Unsupported file format. Please upload a jpg, jpeg, or png file.")
             
     # Display the next button
-    if st.button("**How PCA works!! ⇨**", key="next"):
+    if st.button("**How PCA works ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
 
@@ -473,6 +475,7 @@ def display_pixel_intensity_comparison(original_image, compressed_image):
     ax.set_ylabel('Frequency')
     ax.legend()
     st.pyplot(fig)
+    
 
 def display_color_channel_comparison(original_image, compressed_image):
     original_array = np.array(original_image)
@@ -520,29 +523,7 @@ def display_ssim_map(original_image, compressed_image):
     ax.imshow(ssim_image, cmap='gray')
     ax.set_title(f'SSIM Map (Score: {ssim_index:.4f})')
     st.pyplot(fig)
-
-def display_color_distribution(original, compressed):
-    def plot_color_distribution(image, title):
-        image_array = np.array(image)
-        pixels = image_array.reshape(-1, 3)
-        
-        fig = plt.figure(figsize=(5, 3))
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(pixels[:, 0], pixels[:, 1], pixels[:, 2], c=pixels/255, s=1)
-        ax.set_title(title)
-        ax.set_xlabel('Red')
-        ax.set_ylabel('Green')
-        ax.set_zlabel('Blue')
-        st.pyplot(fig)
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        plot_color_distribution(original, "Original Color Distribution")
-    
-    with col2:
-        plot_color_distribution(compressed, "Compressed Color Distribution")
-        
 def display_frequency_domain_analysis(original, compressed):
     def fft_image(image):
         image_gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
@@ -687,9 +668,6 @@ def comparison():
         st.write("### SSIM Map")
         display_ssim_map(original_image, compressed_image)
         
-        st.write("### Color Distribution")
-        display_color_distribution(original_image, compressed_image)
-        
         st.write("### Frequency Domain Analysis")
         display_frequency_domain_analysis(original_image, compressed_image)
         
@@ -701,16 +679,260 @@ def comparison():
         
         st.write("### Sharpness Comparison")
         display_sharpness_comparison(original_image, compressed_image)
+        
     else:
         st.write("No images stored for comparison.")
 
         
     # Display the next button
-    if st.button("**Learn PCA ⇨**", key="next"):
+    if st.button("**Learn PCA**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
+
+# Setup Session State for Progress Tracking
+if 'progress' not in st.session_state:
+    st.session_state.progress = 1  # Tutorial 1 starts unlocked
+if 'quiz_status' not in st.session_state:
+    st.session_state.quiz_status = {}  # Store quiz status for each tutorial
+
+def display_quiz(questions, correct_answers, tutorial_num):
+    """Function to display quiz questions and handle submission"""
+    user_answers = []
+    score = 0
+
+    # Display each question with radio button options
+    for i, q in enumerate(questions):
+        st.write(f"**Q{i + 1}:** {q['question']}")
+        user_answer = st.radio("Select the correct option", q['options'], key=f'q{tutorial_num}_{i}')
+        user_answers.append(user_answer)
+
+    # Submit button to check answers
+    if st.button("Submit"):
+        # Evaluate the answers
+        for i, ans in enumerate(user_answers):
+            if ans == correct_answers[i]:
+                score += 1
+
+        # All answers correct, unlock the next tutorial
+        if score == len(questions):
+            st.success("All answers are correct! Moving to the next tutorial...")
+            st.session_state.progress += 1
+            st.session_state.quiz_status[tutorial_num] = 'passed'
+        else:
+            st.error("Some answers are incorrect. Try again!")
+
+def display_pdf_from_file(pdf_path):
+    """Convert PDF pages to images and display them in Streamlit"""
+    doc = fitz.open(pdf_path)
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap()
+        img = pix.tobytes("png")
+        st.image(img, caption=f"Page {page_num + 1}", use_column_width=True)
+
+def learn_PCA():
+    """Function to display tutorials and quizzes for learning PCA"""
+    # Define the directory for storing PDF files
+    pdf_dir = "tutorial_pdfs/"  # Change this to the path where you store PDFs
+
+    # Tutorial Content
+    tutorials = [
+        {
+            "title": "Tutorial 1: Introduction to PCA",
+            "pdf_file": "tutorial1.pdf",
+            "quiz": [
+                {"question": "What does PCA stand for?", "options": ["Principal Component Analysis", "Principal Causal Analysis", "Partial Correlation Analysis"]},
+                {"question": "Which of these is a use case of PCA?", "options": ["Dimensionality Reduction", "Classification", "Regression"]},
+                {"question": "What kind of data is required for PCA?", "options": ["Numerical", "Categorical", "Text"]},
+            ],
+            "correct_answers": ["Principal Component Analysis", "Dimensionality Reduction", "Numerical"]
+        },
+        {
+            "title": "Tutorial 2: Mathematical Foundation",
+            "pdf_file": "tutorial2.pdf",
+            "quiz": [
+                {"question": "What is Eigenvalue?", "options": ["A value associated with matrix", "A statistical measure", "A type of variable"]},
+                {"question": "PCA is based on which decomposition?", "options": ["SVD", "QR Decomposition", "Cholesky Decomposition"]},
+                {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
+            ],
+            "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
+        }
+        # Add more tutorials as needed
+    ]
+
+    # Display Tutorials
+    st.title("Learn PCA")
+    for idx, tutorial in enumerate(tutorials):
+        tutorial_number = idx + 1
+
+        # Check progress to unlock tutorials
+        if st.session_state.progress >= tutorial_number:
+            st.header(f"{tutorial['title']}")
+            
+            # Retrieve and display the PDF
+            pdf_path = os.path.join(pdf_dir, tutorial['pdf_file'])
+            if os.path.exists(pdf_path):
+                display_pdf_from_file(pdf_path)
+            else:
+                st.error(f"PDF for {tutorial['title']} not found!")
+
+            # Check if quiz should be displayed for the tutorial
+            if st.session_state.progress == tutorial_number and tutorial_number not in st.session_state.quiz_status:
+                st.write("### Ready to Test Yourself")
+                display_quiz(tutorial["quiz"], tutorial["correct_answers"], tutorial_number)
+
+            st.write("---")
+        else:
+            st.write(f"**Tutorial {tutorial_number} is locked. Complete previous quizzes to unlock.**")
+
+import fitz  # PyMuPDF
+import os
+
+# Setup session state for progress tracking and quiz status
+if 'progress' not in st.session_state:
+    st.session_state.progress = 1  # Tutorial 1 starts unlocked
+if 'quiz_status' not in st.session_state:
+    st.session_state.quiz_status = {}  # Store quiz status for each tutorial
+
+def display_quiz(questions, correct_answers, tutorial_num):
+    """Function to display quiz questions and handle submission"""
+    user_answers = []
+    score = 0
+
+    # Display each question with radio button options
+    for i, q in enumerate(questions):
+        st.write(f"**Q{i + 1}:** {q['question']}")
+        user_answer = st.radio("Select the correct option", q['options'], key=f'q{tutorial_num}_{i}')
+        user_answers.append(user_answer)
+
+    # Submit button to check answers
+    if st.button("Submit Quiz", key=f'submit_{tutorial_num}'):
+        # Evaluate the answers
+        for i, ans in enumerate(user_answers):
+            if ans == correct_answers[i]:
+                score += 1
+
+        # All answers correct, unlock the next tutorial
+        if score == len(questions):
+            st.success("All answers are correct! Moving to the next tutorial...")
+            st.session_state.progress += 1
+            st.session_state.quiz_status[tutorial_num] = 'passed'
+        else:
+            st.error("Some answers are incorrect. Please try again.")
+
+def display_pdf_from_file(pdf_path):
+    """Convert PDF pages to images and display them in Streamlit"""
+    doc = fitz.open(pdf_path)
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap()
+        img = pix.tobytes("png")
+        st.image(img, caption=f"Page {page_num + 1}", use_column_width=True)
+
+def what_PCA():
+    """Function to display tutorials and quizzes for learning PCA"""
+    # Define the directory for storing PDF files
+    pdf_dir = "tutorial_pdfs"  # Change this to the path where you store PDFs
+
+    # Tutorial Content
+    tutorials = [
+        {
+            "title": "Tutorial 1: Introduction to PCA",
+            "pdf_file": "tutorial1.pdf",
+            "quiz": [
+                {"question": "What does PCA stand for?", "options": ["Principal Component Analysis", "Principal Causal Analysis", "Partial Correlation Analysis"]},
+                {"question": "Which of these is a use case of PCA?", "options": ["Dimensionality Reduction", "Classification", "Regression"]},
+                {"question": "What kind of data is required for PCA?", "options": ["Numerical", "Categorical", "Text"]},
+            ],
+            "correct_answers": ["Principal Component Analysis", "Dimensionality Reduction", "Numerical"]
+        },
+        {
+            "title": "Tutorial 2: Mathematical Foundation",
+            "pdf_file": "tutorial2.pdf",
+            "quiz": [
+                {"question": "What is Eigenvalue?", "options": ["A value associated with matrix", "A statistical measure", "A type of variable"]},
+                {"question": "PCA is based on which decomposition?", "options": ["SVD", "QR Decomposition", "Cholesky Decomposition"]},
+                {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
+            ],
+            "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
+        }
+        # Add more tutorials as needed
+    ]
+
+    # Display Tutorials
+    st.title("Learn PCA")
+    for idx, tutorial in enumerate(tutorials):
+        tutorial_number = idx + 1
+
+        # Check progress to unlock tutorials
+        if st.session_state.progress >= tutorial_number:
+            st.header(f"{tutorial['title']}")
+
+            # Retrieve and display the PDF
+            pdf_path = os.path.join(pdf_dir, tutorial['pdf_file'])
+            if os.path.exists(pdf_path):
+                display_pdf_from_file(pdf_path)
+            else:
+                st.error(f"PDF for {tutorial['title']} not found!")
+
+            # After displaying the PDF, show the quiz
+            if st.session_state.progress == tutorial_number and tutorial_number not in st.session_state.quiz_status:
+                st.write("### Ready to Test Yourself")
+                display_quiz(tutorial["quiz"], tutorial["correct_answers"], tutorial_number)
+                st.write("---")
+        else:
+            st.write(f"**Tutorial {tutorial_number} is locked. Complete the previous tutorial's quiz to unlock.**")
+
+    # Display the next button
+    if st.button("**Background Remover ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
+    
+def Background_rem():
+    st.title("🌟 Background Remover")
+
+    if 'original_image' not in st.session_state:
+        st.session_state['original_image'] = None
+    if 'processed_image' not in st.session_state:
+        st.session_state['processed_image'] = None
+
+    uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
+
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        st.session_state['original_image'] = image
+        st.image(image, caption='Uploaded Image', use_column_width=True)
+
+    if st.session_state['original_image'] is not None:
+        if st.button("Remove Background"):
+            with st.spinner('Processing...'):
+                image = st.session_state['original_image']
+                # Convert PIL image to byte array
+                buf = io.BytesIO()
+                image.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                # Remove background
+                result = remove(byte_im)
+                # Convert result byte array back to PIL image
+                st.session_state['processed_image'] = Image.open(io.BytesIO(result))
+
+    if st.session_state['processed_image'] is not None:
+        st.image(st.session_state['processed_image'], caption='Background Removed', use_column_width=True)
+        buf = io.BytesIO()
+        st.session_state['processed_image'].save(buf, format="PNG")
+        byte_im = buf.getvalue()
+        st.download_button(
+            label="Download Image",
+            data=byte_im,
+            file_name="background_removed.png",
+            mime="image/png"
+        )
+        
+    # Display the next button
+    if st.button("**Feedback⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
-
 def load_feedback(file_path):
     if Path(file_path).exists():
         with open(file_path, 'r') as f:
@@ -754,126 +976,12 @@ def feedback():
         st.write(f"Submitted on: {feedback['timestamp']}")
         st.write("---")
 
-    # Display the next button
-    if st.button("**Return to Home Page ⇨**", key="next"):
+        
+# Display next feature 
+    if st.button("**Return to Home Page⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
-
-def what_PCA():
-    st.title("Learn PCA")
-
-    st.markdown("""
-    <style>
-        .big-paragraph {
-            font-size: 22px;
-            line-height: 1.5;
-            margin-top: 20px;
-            text-align: left;
-            }
-        .sub {
-            font-family: 'Merriweather', serif; /* Professional and beautiful font */
-            text-align: center;
-            font-size: 23px;
-            font-weight: bold; /* Making the text bold */
-            margin: 2px 0; /* Adding margin */
-            line-height: 1.5; /* Adjusting line height */
-            letter-spacing: 1.3px; /* Adjusting letter spacing */
-        }
-    </style>
-    <p class="sub", style="font-size: 40px;">What is PCA?</p>
-    <p class="big-paragraph">Two main mathematical actors –</p>
-    <p style="text-align:justify", class="big-paragraph">a.	Eigen Vector</p>
-    <p style="text-align:justify", class="big-paragraph">b. Eigen Value</p>
-    <p class= "big_paragraph">We know the Arabic numerals 0, 1, 2, …; and if we begin to arrange these numbers in the form of rows and columns and then add them like we add numerals and multiply them like we add numerals and multiply them like we do for numbers as follows:</p>
-    """, unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 2 & 1 \\ 3 & 4 \end{bmatrix} + \begin{bmatrix} 8 & 1 \\ 9 & 6 \end{bmatrix} = \begin{bmatrix} 10 & 2 \\ 12 & 10 \end{bmatrix}\tag{1}""")
-    st.markdown("""
-    <p class="big_paragraph">Similarly, we can multiply them as follows:</p>
-    """, unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \times \begin{bmatrix} 1 & 1 \\ 1 & 2 \end{bmatrix} = \begin{bmatrix} (1×1)+(2×1) & (1×1)+(2×2) \\ (3×1)+(4×1) & (3×1)+(4×2) \end{bmatrix} = \begin{bmatrix} 3 & 5 \\ 7 & 11 \end{bmatrix}\tag{2}""")
-    st.markdown("""
-                <p class="big_paragraph">What do we realise from equation (i) & (ii) above! The objects on the RHS are new matrices after adding or multiplying two matrices the way we have for numbers.</p>
-                <p class="big_paragraph">Before we proceed, we can define one more multiplication of a matrix with a scalar as follows:</p>
-                """, unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 5 & 1 \\ 6 & 1 \end{bmatrix} \times 2 = \begin{bmatrix} 10 & 2 \\ 12 & 2 \end{bmatrix}\tag{3}""")
-    st.markdown("""
-                <p class="big_paragraph">However, things start getting interesting when we start multiplying a matrix to a 𝕍𝔼ℂ𝕋𝕆ℝ. What does 𝕍𝔼ℂ𝕋𝕆ℝ mean.</p>
-                <p class="big_paragraph">Well, any matrix with one row or column can be called as a vector. Graphically one can say that a matrix formed by the components of a vector in mutually perpendicular directions can be said to be a 𝕍𝔼ℂ𝕋𝕆ℝ.</p>
-                <p class="big_paragraph">e.g.</p>
-                """, unsafe_allow_html=True)
-    st.image("Resources/img1.png", width=500)
-    st.markdown("""<p class="big-paragraph", style="font-weight: bold;">•	Let’s play and see what matrix does to ‘VECTORS’?</p>""", unsafe_allow_html=True)
-    st.latex(r"""Consider\space a\space matrix \begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} and\space a\space vector \begin{bmatrix} 1 \\ 2 \end{bmatrix}.""")
-    st.markdown("""<p class="big_paragraph">Now, let’s multiply both of them and see what happens</p>""", unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 3×1 + (-2)×1 \\ -1×1 + 4×1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
-    st.markdown("""<p class="big_paragraph">So, we put a vector as input and we get another vector as output but, that is scaled and rotated as compared to the original one. This is what it means that ‘Matrix Does Sometimes Interesting to Vectors.’</p>""", unsafe_allow_html=True)
-    st.image("Resources/img2.png", width=500)
-    st.markdown("""<p class="big_paragraph">Different matrices can scale and rotate the vectors into different vectors at all. Let us take a few following examples to understand this rotation dance:</p>""", unsafe_allow_html=True)
-    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix, if multiplied with a vector, will rotate the given vector by 90॰.</p>""", unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} -1 \\ 2 \end{bmatrix}""")
-    st.image("Resources/img3.png", width=500)
-    st.markdown("""<p class="big_paragraph"><strong>✓</strong> 	The following matrix will scale the input matrix by a factor of 2, since the diagonal elements contain 2.</p>""", unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
-    st.image("Resources/img4.png", width=500)
-    st.markdown("""<p class="big_paragraph">So, different input matrices get scaled and rotated differently based on how we operate upon them. However, all the transformation are linear as in any vector on the same line as one of those inputs will be mapped on the same line as the corresponding outputs.</p>""", unsafe_allow_html=True)
-    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \end{bmatrix}""")
-    st.image("Resources/img5.png", width=500)
-    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 3 \\ 3 \end{bmatrix} = \begin{bmatrix} 3 \\ 9 \end{bmatrix}""")
-    st.image("Resources/img6.png", width=500)
-    st.latex(r"""\text{Now consider a matrix A = }\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \text{and calculate it’s eigen value and eigen vectors which can be as follows:}""")
-    st.latex(r"""\text{Eigen values come out to be 2 and 5 respectively and the corresponding eigen vectors are }\begin{bmatrix} 2 \\ 1 \end{bmatrix} \text{and} \begin{bmatrix} 1 \\ -1 \end{bmatrix}.""")
-    st.latex(r"""\text{Now, let’s see what happens when we multiply the matrix A with it’s eigen vectors.}""")
-    st.latex(r"""\begin{bmatrix} 3 & -2 \\ -1 & 4 \end{bmatrix} \times \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 2 \end{bmatrix}""")
-    st.image("Resources/img7.png", width=500)
-    st.markdown("""<p class="big_paragraph">So, what we notice is that, we took a vector A.  We called it an eigen vector of matrix A. Then when we operate this vector with the matrix A, no change occurred in the direction although the same matrix A was responsible for rotating and scaling other vectors earlier. So, any vector that is only scaled by a matrix is called an <b>Eigen Vactor</b> <i>(Eigen in German means ‘Special’)</i> of that matrix, and how much the vector is scaled by is called its ‘Eigen Value.’ So, Eigen Vectors and Eigen Values are the vectors and values that remain unchanged in direction and only get scaled when operated upon by a matrix.</p>""", unsafe_allow_html=True)
-
-    # Display the next button
-    if st.button("**Feedback ⇨**", key="next"):
-        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-        st.rerun()
-    
-
-def Background_rem():
-    st.title("🌟 Background Remover")
-
-    if 'original_image' not in st.session_state:
-        st.session_state['original_image'] = None
-    if 'processed_image' not in st.session_state:
-        st.session_state['processed_image'] = None
-
-    uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
-
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        st.session_state['original_image'] = image
-        st.image(image, caption='Uploaded Image', use_column_width=True)
-
-    if st.session_state['original_image'] is not None:
-        if st.button("Remove Background"):
-            with st.spinner('Processing...'):
-                image = st.session_state['original_image']
-                # Convert PIL image to byte array
-                buf = io.BytesIO()
-                image.save(buf, format="PNG")
-                byte_im = buf.getvalue()
-                # Remove background
-                result = remove(byte_im)
-                # Convert result byte array back to PIL image
-                st.session_state['processed_image'] = Image.open(io.BytesIO(result))
-
-    if st.session_state['processed_image'] is not None:
-        st.image(st.session_state['processed_image'], caption='Background Removed', use_column_width=True)
-        buf = io.BytesIO()
-        st.session_state['processed_image'].save(buf, format="PNG")
-        byte_im = buf.getvalue()
-        st.download_button(
-            label="Download Image",
-            data=byte_im,
-            file_name="background_removed.png",
-            mime="image/png"
-        )
-
-
+        
 if current_page == "Home":
     home()
 elif current_page == "Compress Image":
