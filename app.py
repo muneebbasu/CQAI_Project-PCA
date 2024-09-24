@@ -784,6 +784,20 @@ def what_PCA():
         else:
             st.write(f"**Tutorial {tutorial_number} is locked. Complete the previous tutorial's quiz to unlock.**")
 
+
+ # FAQ Section
+    st.title("Frequently Asked Questions (FAQ)")
+    faq_items = [
+        {"question": "What is PCA used for?", "answer": "PCA is used primarily for dimensionality reduction and data visualization, allowing us to reduce the number of variables in our data without losing much information."},
+        {"question": "Can PCA be used for classification?", "answer": "PCA itself is not a classification technique, but it can be used as a preprocessing step to reduce the number of features before applying classification algorithms."},
+        {"question": "Is PCA sensitive to data scaling?", "answer": "Yes, PCA is sensitive to the scale of the data. It is generally recommended to standardize or normalize the data before applying PCA."},
+        # Add more FAQs as needed
+    ]
+
+    for faq in faq_items:
+        st.subheader(f"**{faq['question']}**")
+        st.write(faq['answer'])
+        
     # Display the next button
     if st.button("**Background Remover ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
