@@ -11,7 +11,6 @@ from pathlib import Path
 import cv2
 import io
 import base64  # Import base64 for encoding
-import fitz  # PyMuPDF
 import os
 from skimage.color import rgb2lab, lab2rgb
 import requests
@@ -260,12 +259,7 @@ def how_pca_works():
 
     # Title and explanation of PCA
     st.title("📊 How PCA Works (For Technerds!)")
-
-    show_pca_workings = st.checkbox("Show detailed workings of PCA")
-
-    with st.container(border=True):
-        if show_pca_workings:
-            st.markdown("""
+    st.markdown("""
                 ### Detailed Workings of PCA:
 
                 1. **Convert image to numpy array**:
@@ -330,98 +324,98 @@ def how_pca_works():
                     return reconstructed_data.astype(np.uint8)
                 ```
             """)
-            if 'image' not in st.session_state:
-                st.error("Please upload an image to see the detailed workings of PCA.")
-                return
-            original_image = Image.open(BytesIO(st.session_state['image']))
-            no_of_components = st.session_state['no_of_components']
+    if 'image' not in st.session_state:
+        st.error("Please upload an image to see the detailed workings of PCA.")
+        return
+    original_image = Image.open(BytesIO(st.session_state['image']))
+    no_of_components = st.session_state['no_of_components']
 
-            # Function to apply PCA on an image
-            def apply_pca(original_image, no_of_components):
+    # Function to apply PCA on an image
+    def apply_pca(original_image, no_of_components):
 
-                # Retrieve the number of components from the session state
-                img_array = np.array(original_image.convert("RGB"))
-                st.image(img_array, caption='Original Image', use_column_width=True)
+        # Retrieve the number of components from the session state
+        img_array = np.array(original_image.convert("RGB"))
+        st.image(img_array, caption='Original Image', use_column_width=True)
 
-                # Splitting RGB channels
-                red_channel = img_array[:, :, 0]
-                green_channel = img_array[:, :, 1]
-                blue_channel = img_array[:, :, 2]
-                st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
-                st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
-                st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
+        # Splitting RGB channels
+        red_channel = img_array[:, :, 0]
+        green_channel = img_array[:, :, 1]
+        blue_channel = img_array[:, :, 2]
+        st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
+        st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
+        st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
 
-                # Apply PCA on each channel
-                red_compressed = pca_compress(red_channel, no_of_components , 'Red Channel')
-                green_compressed = pca_compress(green_channel, no_of_components , 'Green Channel')
-                blue_compressed = pca_compress(blue_channel, no_of_components , 'Blue Channel')
+        # Apply PCA on each channel
+        red_compressed = pca_compress(red_channel, no_of_components , 'Red Channel')
+        green_compressed = pca_compress(green_channel, no_of_components , 'Green Channel')
+        blue_compressed = pca_compress(blue_channel, no_of_components , 'Blue Channel')
 
-                # Combine compressed channels into one image
-                compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
-                compressed_img = Image.fromarray(np.uint8(compressed_img_array))
-                st.image(compressed_img, caption='Compressed Image', use_column_width=True)
+        # Combine compressed channels into one image
+        compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
+        compressed_img = Image.fromarray(np.uint8(compressed_img_array))
+        st.image(compressed_img, caption='Compressed Image', use_column_width=True)
 
-                # Convert compressed image to BytesIO for storage
-                compressed_img_bytes = BytesIO()
-                compressed_img.save(compressed_img_bytes, format='JPEG')
-                compressed_img_bytes.seek(0)
-                return compressed_img_bytes
+        # Convert compressed image to BytesIO for storage
+        compressed_img_bytes = BytesIO()
+        compressed_img.save(compressed_img_bytes, format='JPEG')
+        compressed_img_bytes.seek(0)
+        return compressed_img_bytes
 
-            # Function to perform PCA compression on a single channel
-            def pca_compress(channel, no_of_components, channel_name):
-                # Subtract the mean from the data
-                mean = np.mean(channel, axis=0)
-                centered_data = channel - mean
+    # Function to perform PCA compression on a single channel
+    def pca_compress(channel, no_of_components, channel_name):
+        # Subtract the mean from the data
+        mean = np.mean(channel, axis=0)
+        centered_data = channel - mean
 
-                # Normalize centered data for display
-                centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
-                #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
+        # Normalize centered data for display
+        centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
+        #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
 
-                # Compute the covariance matrix
-                cov_matrix = np.cov(centered_data, rowvar=False)
-                st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
+        # Compute the covariance matrix
+        cov_matrix = np.cov(centered_data, rowvar=False)
+        st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
 
-                # Compute the eigenvalues and eigenvectors of the covariance matrix
-                eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
+        # Compute the eigenvalues and eigenvectors of the covariance matrix
+        eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
 
-                # Sort eigenvalues and eigenvectors in descending order
-                sorted_indices = np.argsort(eig_vals)[::-1]
-                sorted_eig_vals = eig_vals[sorted_indices]
-                sorted_eig_vecs = eig_vecs[:, sorted_indices]
+        # Sort eigenvalues and eigenvectors in descending order
+        sorted_indices = np.argsort(eig_vals)[::-1]
+        sorted_eig_vals = eig_vals[sorted_indices]
+        sorted_eig_vecs = eig_vecs[:, sorted_indices]
 
-                # Show sorted eigenvalues and eigenvectors
-                st.text(f'Step in {channel_name}: Sorted Eigenvalues\n{sorted_eig_vals}')
-                st.text(f'Step in {channel_name}: Sorted Eigenvectors\n{sorted_eig_vecs}')
+        # Show sorted eigenvalues and eigenvectors
+        st.text(f'Step in {channel_name}: Sorted Eigenvalues\n{sorted_eig_vals}')
+        st.text(f'Step in {channel_name}: Sorted Eigenvectors\n{sorted_eig_vecs}')
 
-                # Choose the number of principal components
-                if no_of_components > len(sorted_eig_vals):
-                    no_of_components = len(sorted_eig_vals)
-                elif no_of_components < 1:
-                    no_of_components = 1
+        # Choose the number of principal components
+        if no_of_components > len(sorted_eig_vals):
+            no_of_components = len(sorted_eig_vals)
+        elif no_of_components < 1:
+            no_of_components = 1
 
-                # Project the data onto the selected principal components
-                projection_matrix = sorted_eig_vecs[:, :no_of_components]
-                compressed_data = np.dot(centered_data, projection_matrix)
+        # Project the data onto the selected principal components
+        projection_matrix = sorted_eig_vecs[:, :no_of_components]
+        compressed_data = np.dot(centered_data, projection_matrix)
 
-                # Normalize compressed data for display
-                compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
-                #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
+        # Normalize compressed data for display
+        compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
+        #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
 
-                # Reconstruct the data
-                reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
+        # Reconstruct the data
+        reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
 
-                # Normalize reconstructed data for display
-                reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
-                st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
+        # Normalize reconstructed data for display
+        reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
+        st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
 
-                # Clip the values to [0, 255] for the final output
-                reconstructed_data = np.clip(reconstructed_data, 0, 255)
+        # Clip the values to [0, 255] for the final output
+        reconstructed_data = np.clip(reconstructed_data, 0, 255)
 
-                return reconstructed_data.astype(np.uint8)
+        return reconstructed_data.astype(np.uint8)
 
 
-            if st.button('Apply PCA'):
-                apply_pca(original_image, no_of_components)
+    if st.button('Apply PCA'):
+        apply_pca(original_image, no_of_components)
 
     # Display the next button
     if st.button("**Compare Images ⇨**", key="next"):
@@ -684,6 +678,11 @@ def comparison():
     else:
         st.write("No images stored for comparison.")
         
+        # Display the next button
+    if st.button("**Learn PCA ⇨**", key="next"):
+        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
+        st.rerun()
+        
 # Session state for progress tracking and quiz status
 if 'progress' not in st.session_state:
     st.session_state.progress = 1  # Tutorial 1 starts unlocked
@@ -858,7 +857,7 @@ def Background_rem():
         )
         
     # Display the next button
-    if st.button("**Feedback⇨**", key="next"):
+    if st.button("**Feedback ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
@@ -907,7 +906,7 @@ def feedback():
 
         
 # Display next feature 
-    if st.button("**Return to Home Page⇨**", key="next"):
+    if st.button("**Return to Home Page ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
