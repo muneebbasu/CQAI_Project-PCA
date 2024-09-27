@@ -702,7 +702,7 @@ def display_quiz(questions, correct_answers, tutorial_num):
         
         # Display a selectbox with a placeholder for unanswered questions
         user_answer = st.selectbox(f"Choose the correct option for Q{i + 1}", 
-                                   options=["Select an option"] + q['options'], key=f'q{tutorial_num}_{i}')
+                                options=["Select an option"] + q['options'], key=f'q{tutorial_num}_{i}')
         
         if user_answer == "Select an option":
             all_answered = False
