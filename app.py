@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import cv2
 import io
+import base64  # Import base64 for encoding
 import fitz  # PyMuPDF
 import os
 from skimage.color import rgb2lab, lab2rgb
@@ -682,14 +683,8 @@ def comparison():
         
     else:
         st.write("No images stored for comparison.")
-
         
-    # Display the next button
-    if st.button("**Learn PCA**", key="next"):
-        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-        st.rerun()
-
-# Setup session state for progress tracking and quiz status
+# Session state for progress tracking and quiz status
 if 'progress' not in st.session_state:
     st.session_state.progress = 1  # Tutorial 1 starts unlocked
 if 'quiz_status' not in st.session_state:
@@ -699,36 +694,55 @@ def display_quiz(questions, correct_answers, tutorial_num):
     """Function to display quiz questions and handle submission"""
     user_answers = []
     score = 0
+    all_answered = True
 
-    # Display each question with radio button options
+    # Display each question with a selectbox for options
     for i, q in enumerate(questions):
         st.write(f"**Q{i + 1}:** {q['question']}")
-        user_answer = st.radio("Select the correct option", q['options'], key=f'q{tutorial_num}_{i}')
+        
+        # Display a selectbox with a placeholder for unanswered questions
+        user_answer = st.selectbox(f"Choose the correct option for Q{i + 1}", 
+                                   options=["Select an option"] + q['options'], key=f'q{tutorial_num}_{i}')
+        
+        if user_answer == "Select an option":
+            all_answered = False
+        
+        # Store user answers only if an option is selected
         user_answers.append(user_answer)
 
     # Submit button to check answers
-    if st.button("Submit Quiz", key=f'submit_{tutorial_num}'):
-        # Evaluate the answers
-        for i, ans in enumerate(user_answers):
-            if ans == correct_answers[i]:
-                score += 1
-
-        # All answers correct, unlock the next tutorial
-        if score == len(questions):
-            st.success("All answers are correct! Moving to the next tutorial...")
-            st.session_state.progress += 1
-            st.session_state.quiz_status[tutorial_num] = 'passed'
+    if st.button(f"Submit Quiz {tutorial_num}", key=f'submit_{tutorial_num}'):
+        if not all_answered:
+            st.error("Please answer all the questions before submitting.")
         else:
-            st.error("Some answers are incorrect. Please try again.")
+            # Evaluate the answers
+            for i, ans in enumerate(user_answers):
+                if ans == correct_answers[i]:
+                    score += 1
 
-def display_pdf_from_file(pdf_path):
-    """Convert PDF pages to images and display them in Streamlit"""
-    doc = fitz.open(pdf_path)
-    for page_num in range(len(doc)):
-        page = doc.load_page(page_num)
-        pix = page.get_pixmap()
-        img = pix.tobytes("png")
-        st.image(img, caption=f"Page {page_num + 1}", use_column_width=True)
+            # If all answers are correct, unlock the next tutorial
+            if score == len(questions):
+                st.success("All answers are correct! Moving to the next tutorial...")
+                st.session_state.progress += 1
+                st.session_state.quiz_status[tutorial_num] = 'passed'
+            else:
+                st.error("Some answers are incorrect. Please try again.")
+
+
+def display_pdf(pdf_file):
+    """Embed PDF viewer in Streamlit"""
+    with open(pdf_file, "rb") as f:
+        pdf_data = f.read()
+
+    # Use base64 encoding to embed PDF in an iframe
+    base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+
+    # Embed PDF in HTML iframe
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
+
+    # Add download button as well
+    st.download_button(label="Download the tutorial PDF", data=pdf_data, file_name=pdf_file, mime="application/pdf")
 
 def what_PCA():
     """Function to display tutorials and quizzes for learning PCA"""
@@ -738,14 +752,14 @@ def what_PCA():
     # Tutorial Content
     tutorials = [
         {
-            "title": "Tutorial 1: Introduction to PCA",
+            "title": "Tutorial 1: Understanding Eigenvalues and Eigenvectors",
             "pdf_file": "tutorial1.pdf",
             "quiz": [
-                {"question": "What does PCA stand for?", "options": ["Principal Component Analysis", "Principal Causal Analysis", "Partial Correlation Analysis"]},
-                {"question": "Which of these is a use case of PCA?", "options": ["Dimensionality Reduction", "Classification", "Regression"]},
-                {"question": "What kind of data is required for PCA?", "options": ["Numerical", "Categorical", "Text"]},
+                {"question": "What happens when you multiply a matrix by a vector?", "options": ["The vector's direction always changes.", "The vector may get rotated or scaled.", "The vector remains unchanged."]},
+                {"question": "Which of the following is true about eigenvectors?", "options": ["Eigenvectors change direction when multiplied by a matrix.", "Eigenvectors disappear when multiplied by a matrix.", "Eigenvectors retain their direction but may be scaled."]},
+                {"question": "What does an eigenvalue represent in the context of matrix multiplication with an eigenvector?", "options": ["The rotation angle of the vector.", "The factor by which the eigenvector is scaled.", "The determinant of the matrix"]},
             ],
-            "correct_answers": ["Principal Component Analysis", "Dimensionality Reduction", "Numerical"]
+            "correct_answers": ["The vector may get rotated or scaled.", "Eigenvectors retain their direction but may be scaled.", "The factor by which the eigenvector is scaled."]
         },
         {
             "title": "Tutorial 2: Mathematical Foundation",
@@ -772,7 +786,7 @@ def what_PCA():
             # Retrieve and display the PDF
             pdf_path = os.path.join(pdf_dir, tutorial['pdf_file'])
             if os.path.exists(pdf_path):
-                display_pdf_from_file(pdf_path)
+                display_pdf(pdf_path)
             else:
                 st.error(f"PDF for {tutorial['title']} not found!")
 
@@ -784,8 +798,7 @@ def what_PCA():
         else:
             st.write(f"**Tutorial {tutorial_number} is locked. Complete the previous tutorial's quiz to unlock.**")
 
-
- # FAQ Section
+# FAQ Section
     st.title("Frequently Asked Questions (FAQ)")
     faq_items = [
         {"question": "What is PCA used for?", "answer": "PCA is used primarily for dimensionality reduction and data visualization, allowing us to reduce the number of variables in our data without losing much information."},
@@ -796,7 +809,8 @@ def what_PCA():
 
     for faq in faq_items:
         st.subheader(f"**{faq['question']}**")
-        st.write(faq['answer'])
+        st.write(faq['answer'])      
+
         
     # Display the next button
     if st.button("**Background Remover ⇨**", key="next"):
