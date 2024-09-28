@@ -229,7 +229,7 @@ def upload_image():
                     st.session_state['original_image'] = uploaded_image
                     st.session_state['compressed_image'] = compressed_image_bytes
                     st.session_state['no_of_components'] = num_components
-
+        
                     # Save and download compressed image
                     st.markdown("### Save Compressed Image")
                     st.write("Click the button below to save and download the compressed image.")

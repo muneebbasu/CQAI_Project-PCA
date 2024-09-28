@@ -28,7 +28,9 @@ def apply_pca(img, num_components):
     compressed_img.save(compressed_img_bytes, format='JPEG')
     compressed_img_bytes.seek(0) 
     return compressed_img_bytes
+    
 
+print("Abs")
 # Function to perform PCA compression on a single channel
 def pca_compress(channel, num_components):
     # Subtract the mean from the data
@@ -63,6 +65,7 @@ def pca_compress(channel, num_components):
     reconstructed_data = np.clip(reconstructed_data, 0, 255)
 
     return reconstructed_data.astype(np.uint8)
+
 
 # Function to validate image format
 def validate_image(uploaded_file):
