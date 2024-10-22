@@ -769,7 +769,19 @@ def what_PCA():
                 {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
             ],
             "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
-        }
+        },
+        {   # Tutorial 3
+
+            "title": "Tutorial 3: PCA in Practice",
+            "pdf_file": "tutorial3.pdf",
+            "quiz": [
+                {"question": "What is Eigenvalue?", "options": ["A value associated with matrix", "A statistical measure", "A type of variable"]},
+                {"question": "PCA is based on which decomposition?", "options": ["SVD", "QR Decomposition", "Cholesky Decomposition"]},
+                {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
+            ],
+            "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
+        },
+            
         # Add more tutorials as needed
     ]
 
