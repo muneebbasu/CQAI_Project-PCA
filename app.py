@@ -870,7 +870,7 @@ def feedback():
             font-size: 18px;
         }
         .timestamp {
-            color: #666;
+            color: #680;
             font-size: 14px;
             font-style: italic;
         }
@@ -902,7 +902,7 @@ def feedback():
         st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
         rating = st_star_rating(
             label="",
-            maxValue=4,
+            maxValue=5,
             defaultValue=0,
             key="rating",
             size=40,
