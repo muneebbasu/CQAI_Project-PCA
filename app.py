@@ -17,6 +17,8 @@ import requests
 import datetime
 import json
 from rembg import remove
+from background_remover import background_remover_page
+from database import FeedbackStorage
 
 # Function to load images from URLs
 def load_image(url):
@@ -827,97 +829,131 @@ def what_PCA():
     if st.button("**Background Remover ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
-    
-def Background_rem():
-    st.title("🌟 Background Remover")
-
-    if 'original_image' not in st.session_state:
-        st.session_state['original_image'] = None
-    if 'processed_image' not in st.session_state:
-        st.session_state['processed_image'] = None
-
-    uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
-
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        st.session_state['original_image'] = image
-        st.image(image, caption='Uploaded Image', use_column_width=True)
-
-    if st.session_state['original_image'] is not None:
-        if st.button("Remove Background"):
-            with st.spinner('Processing...'):
-                image = st.session_state['original_image']
-                # Convert PIL image to byte array
-                buf = io.BytesIO()
-                image.save(buf, format="PNG")
-                byte_im = buf.getvalue()
-                # Remove background
-                result = remove(byte_im)
-                # Convert result byte array back to PIL image
-                st.session_state['processed_image'] = Image.open(io.BytesIO(result))
-
-    if st.session_state['processed_image'] is not None:
-        st.image(st.session_state['processed_image'], caption='Background Removed', use_column_width=True)
-        buf = io.BytesIO()
-        st.session_state['processed_image'].save(buf, format="PNG")
-        byte_im = buf.getvalue()
-        st.download_button(
-            label="Download Image",
-            data=byte_im,
-            file_name="background_removed.png",
-            mime="image/png"
-        )
         
-    # Display the next button
-    if st.button("**Feedback ⇨**", key="next"):
-        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-        st.rerun()
         
-def load_feedback(file_path):
-    if Path(file_path).exists():
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    return []
-
-def save_feedback(file_path, feedback_data):
-    with open(file_path, 'w') as f:
-        json.dump(feedback_data, f, indent=4)
-
 def feedback():
-    st.title("💬 Feedback")
-    st.write("Please provide your feedback and suggestions here.")
+    storage = FeedbackStorage()
     
-    st.subheader("Rating:")
-    stars = st_star_rating(label="Please rate your experience", maxValue=5, defaultValue=0, key="rating", resetLabel="Reset", customCSS="div {background-color: white;}")
+    # Custom CSS for styling
+    st.markdown("""
+        <style>
+        .big-font {
+            font-size: 24px !important;
+            font-weight: bold;
+            color: #1E88E5;
+        }
+        .feedback-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .feedback-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1E88E5, #64B5F6);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .feedback-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            border-left: 4px solid #1E88E5;
+        }
+        .rating-display {
+            color: #FFC107;
+            font-size: 18px;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, #1E88E5, transparent);
+            margin: 20px 0;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Header
+    st.markdown("<div class='feedback-header'><h1>🌟 Share Your Experience</h1></div>", unsafe_allow_html=True)
+
+    # Main feedback container
+    st.markdown("<div class='feedback-container'>", unsafe_allow_html=True)
     
-    st.subheader("Feedback Comment:")
-    feedback_comment = st.text_area("Please leave your feedback comment here.")
+    # Introduction text
+    st.markdown("""
+        <p style='font-size: 18px; text-align: center; color: #666;'>
+            Your feedback helps us improve and serve you better. Please take a moment to share your thoughts!
+        </p>
+    """, unsafe_allow_html=True)
+
+    # Rating and Comment section
+    col1, col2 = st.columns([1, 2])
     
-    if st.button("Submit"):
-        if stars and feedback_comment:
-            feedback_data = {
-                "rating": stars,
-                "comment": feedback_comment,
-                "timestamp": datetime.datetime.now().isoformat()
+    with col1:
+        st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
+        rating = st_star_rating(
+            label="",
+            maxValue=4,
+            defaultValue=0,
+            key="rating",
+            size=40,
+            customCSS={
+                ".stars": {"color": "#FFC107"},
+                "button": {"background-color": "transparent", "border": "none"}
             }
-            file_path = 'feedback.json'
-            feedbacks = load_feedback(file_path)
-            feedbacks.insert(0, feedback_data)  # Insert at the beginning
-            save_feedback(file_path, feedbacks)
-            st.success("Thank you for your feedback!")
+        )
+
+    with col2:
+        st.markdown("<p class='big-font'>Tell us more:</p>", unsafe_allow_html=True)
+        comment = st.text_area(
+            "",
+            height=1,
+            placeholder="Share your thoughts, suggestions, or experiences...",
+            key="feedback_comment"
+        )
+
+    # Submit button with custom styling
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        submit = st.button(
+            "Submit Feedback",
+            key="submit_feedback",
+            help="Click to submit your feedback"
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Handle submission
+    if submit:
+        if rating and comment:
+            storage.save_feedback("Anonymous", rating, comment)
+            st.success("🎉 Thank you for your valuable feedback!")
+            st.balloons()
         else:
-            st.error("Please provide both rating and comment.")
+            st.error("Please provide both a rating and comment before submitting.")
 
-    st.subheader("Previous Feedback:")
-    feedbacks = load_feedback('feedback.json')
+    # Display previous feedback
+    st.markdown("<div class='feedback-header'><h1>📝 Previous Feedback</h1></div>", unsafe_allow_html=True)
+
+    feedbacks = storage.get_all_feedback()
     for feedback in feedbacks:
-        st.write(f"Rating: {feedback['rating']} stars")
-        st.write(f"Comment: {feedback['comment']}")
-        st.write(f"Submitted on: {feedback['timestamp']}")
-        st.write("---")
+        st.markdown("<div class='feedback-card'>", unsafe_allow_html=True)
+        st.markdown(f"<p class='rating-display'>{feedback['rating']} stars</p>", unsafe_allow_html=True)
+        st.markdown(f"<p>{feedback['comment']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p class='timestamp'>{feedback['timestamp']}</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
-        
-# Display next feature 
+    # Display the next button
     if st.button("**Return to Home Page ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
@@ -933,7 +969,7 @@ elif current_page == "Compare Images":
 elif current_page == "Learn PCA":
     what_PCA()
 elif current_page == "Background Remover":
-    Background_rem()
+    background_remover_page()
 elif current_page == "Feedback":
     feedback()
 
