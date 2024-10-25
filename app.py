@@ -19,6 +19,8 @@ import json
 from rembg import remove
 from background_remover import background_remover_page
 from database import FeedbackStorage
+from learn_pca import LearnPCASection
+from how_pca_works import how_pca_works_page
 
 # Function to load images from URLs
 def load_image(url):
@@ -254,173 +256,6 @@ def upload_image():
             
     # Display the next button
     if st.button("**How PCA works ⇨**", key="next"):
-        st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-        st.rerun()
-
-def how_pca_works():
-
-    # Title and explanation of PCA
-    st.title("📊 How PCA Works (For Technerds!)")
-    st.markdown("""
-                ### Detailed Workings of PCA:
-
-                1. **Convert image to numpy array**:
-                ```python
-                img_array = np.array(img)
-                ```
-
-                2. **Splitting RGB channels**:
-                ```python
-                red_channel = img_array[:, :, 0]
-                green_channel = img_array[:, :, 1]
-                blue_channel = img_array[:, :, 2]
-                ```
-
-                3. **Apply PCA on each channel**:
-                ```python
-                red_compressed = pca_compress(red_channel, num_components)
-                green_compressed = pca_compress(green_channel, num_components)
-                blue_compressed = pca_compress(blue_channel, num_components)
-                ```
-
-                4. **Combine compressed channels into one image**:
-                ```python
-                compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
-                compressed_img = Image.fromarray(np.uint8(compressed_img_array))
-                ```
-
-                5. **Function to perform PCA compression on a single channel**:
-                ```python
-                def pca_compress(channel, num_components):
-                    # Subtract the mean from the data
-                    mean = np.mean(channel, axis=0)
-                    centered_data = channel - mean
-
-                    # Compute the covariance matrix
-                    cov_matrix = np.cov(centered_data, rowvar=False)
-
-                    # Compute the eigenvalues and eigenvectors of the covariance matrix
-                    eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
-
-                    # Sort eigenvalues and eigenvectors in descending order
-                    sorted_indices = np.argsort(eig_vals)[::-1]
-                    sorted_eig_vals = eig_vals[sorted_indices]
-                    sorted_eig_vecs = eig_vecs[:, sorted_indices]
-
-                    # Choose the number of principal components
-                    if num_components > len(sorted_eig_vals):
-                        num_components = len(sorted_eig_vals)
-                    elif num_components < 1:
-                        num_components = 1
-
-                    # Project the data onto the selected principal components
-                    projection_matrix = sorted_eig_vecs[:, :num_components]
-                    compressed_data = np.dot(centered_data, projection_matrix)
-
-                    # Reconstruct the data
-                    reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
-
-                    # Clip the values to [0, 255]
-                    reconstructed_data = np.clip(reconstructed_data, 0, 255)
-
-                    return reconstructed_data.astype(np.uint8)
-                ```
-            """)
-    if 'image' not in st.session_state:
-        st.error("Please upload an image to see the detailed workings of PCA.")
-        return
-    original_image = Image.open(BytesIO(st.session_state['image']))
-    no_of_components = st.session_state['no_of_components']
-
-    # Function to apply PCA on an image
-    def apply_pca(original_image, no_of_components):
-
-        # Retrieve the number of components from the session state
-        img_array = np.array(original_image.convert("RGB"))
-        st.image(img_array, caption='Original Image', use_column_width=True)
-
-        # Splitting RGB channels
-        red_channel = img_array[:, :, 0]
-        green_channel = img_array[:, :, 1]
-        blue_channel = img_array[:, :, 2]
-        st.image(red_channel, caption='Step 2: Red Channel', use_column_width=True)
-        st.image(green_channel, caption='Step 2: Green Channel', use_column_width=True)
-        st.image(blue_channel, caption='Step 2: Blue Channel', use_column_width=True)
-
-        # Apply PCA on each channel
-        red_compressed = pca_compress(red_channel, no_of_components , 'Red Channel')
-        green_compressed = pca_compress(green_channel, no_of_components , 'Green Channel')
-        blue_compressed = pca_compress(blue_channel, no_of_components , 'Blue Channel')
-
-        # Combine compressed channels into one image
-        compressed_img_array = np.stack((red_compressed, green_compressed, blue_compressed), axis=2)
-        compressed_img = Image.fromarray(np.uint8(compressed_img_array))
-        st.image(compressed_img, caption='Compressed Image', use_column_width=True)
-
-        # Convert compressed image to BytesIO for storage
-        compressed_img_bytes = BytesIO()
-        compressed_img.save(compressed_img_bytes, format='JPEG')
-        compressed_img_bytes.seek(0)
-        return compressed_img_bytes
-
-    # Function to perform PCA compression on a single channel
-    def pca_compress(channel, no_of_components, channel_name):
-        # Subtract the mean from the data
-        mean = np.mean(channel, axis=0)
-        centered_data = channel - mean
-
-        # Normalize centered data for display
-        centered_display_data = (centered_data - np.min(centered_data)) / (np.max(centered_data) - np.min(centered_data))
-        #st.image(centered_display_data, caption=f'Step in {channel_name}: Centered Data', use_column_width=True)
-
-        # Compute the covariance matrix
-        cov_matrix = np.cov(centered_data, rowvar=False)
-        st.text(f'Step in {channel_name}: Covariance Matrix\n{cov_matrix}')
-
-        # Compute the eigenvalues and eigenvectors of the covariance matrix
-        eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
-
-        # Sort eigenvalues and eigenvectors in descending order
-        sorted_indices = np.argsort(eig_vals)[::-1]
-        sorted_eig_vals = eig_vals[sorted_indices]
-        sorted_eig_vecs = eig_vecs[:, sorted_indices]
-
-        # Show sorted eigenvalues and eigenvectors
-        st.text(f'Step in {channel_name}: Sorted Eigenvalues\n{sorted_eig_vals}')
-        st.text(f'Step in {channel_name}: Sorted Eigenvectors\n{sorted_eig_vecs}')
-
-        # Choose the number of principal components
-        if no_of_components > len(sorted_eig_vals):
-            no_of_components = len(sorted_eig_vals)
-        elif no_of_components < 1:
-            no_of_components = 1
-
-        # Project the data onto the selected principal components
-        projection_matrix = sorted_eig_vecs[:, :no_of_components]
-        compressed_data = np.dot(centered_data, projection_matrix)
-
-        # Normalize compressed data for display
-        compressed_display_data = (compressed_data - np.min(compressed_data)) / (np.max(compressed_data) - np.min(compressed_data))
-        #st.image(compressed_display_data, caption=f'Step in {channel_name}: Compressed Data', use_column_width=True)
-
-        # Reconstruct the data
-        reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
-
-        # Normalize reconstructed data for display
-        reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
-        st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
-
-        # Clip the values to [0, 255] for the final output
-        reconstructed_data = np.clip(reconstructed_data, 0, 255)
-
-        return reconstructed_data.astype(np.uint8)
-
-
-    if st.button('Apply PCA'):
-        apply_pca(original_image, no_of_components)
-
-    # Display the next button
-    if st.button("**Compare Images ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
 
@@ -683,153 +518,16 @@ def comparison():
         # Display the next button
     if st.button("**Learn PCA ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
-        st.rerun()
-        
-# Session state for progress tracking and quiz status
-if 'progress' not in st.session_state:
-    st.session_state.progress = 1  # Tutorial 1 starts unlocked
-if 'quiz_status' not in st.session_state:
-    st.session_state.quiz_status = {}  # Store quiz status for each tutorial
+        st.rerun()   
 
-def display_quiz(questions, correct_answers, tutorial_num):
-    """Function to display quiz questions and handle submission"""
-    user_answers = []
-    score = 0
-    all_answered = True
-
-    # Display each question with a selectbox for options
-    for i, q in enumerate(questions):
-        st.write(f"**Q{i + 1}:** {q['question']}")
-        
-        # Display a selectbox with a placeholder for unanswered questions
-        user_answer = st.selectbox(f"Choose the correct option for Q{i + 1}", 
-                                options=["Select an option"] + q['options'], key=f'q{tutorial_num}_{i}')
-        
-        if user_answer == "Select an option":
-            all_answered = False
-        
-        # Store user answers only if an option is selected
-        user_answers.append(user_answer)
-
-    # Submit button to check answers
-    if st.button(f"Submit Quiz {tutorial_num}", key=f'submit_{tutorial_num}'):
-        if not all_answered:
-            st.error("Please answer all the questions before submitting.")
-        else:
-            # Evaluate the answers
-            for i, ans in enumerate(user_answers):
-                if ans == correct_answers[i]:
-                    score += 1
-
-            # If all answers are correct, unlock the next tutorial
-            if score == len(questions):
-                st.success("All answers are correct! Moving to the next tutorial...")
-                st.session_state.progress += 1
-                st.session_state.quiz_status[tutorial_num] = 'passed'
-            else:
-                st.error("Some answers are incorrect. Please try again.")
-
-
-def display_pdf(pdf_file):
-    """Embed PDF viewer in Streamlit"""
-    with open(pdf_file, "rb") as f:
-        pdf_data = f.read()
-
-    # Use base64 encoding to embed PDF in an iframe
-    base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-
-    # Embed PDF in HTML iframe
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
-    st.markdown(pdf_display, unsafe_allow_html=True)
-
-    # Add download button as well
-    st.download_button(label="Download the tutorial PDF", data=pdf_data, file_name=pdf_file, mime="application/pdf")
-
-def what_PCA():
-    """Function to display tutorials and quizzes for learning PCA"""
-    # Define the directory for storing PDF files
-    pdf_dir = "tutorial_pdfs"  # Change this to the path where you store PDFs
-
-    # Tutorial Content
-    tutorials = [
-        {
-            "title": "Tutorial 1: Understanding Eigenvalues and Eigenvectors",
-            "pdf_file": "tutorial1.pdf",
-            "quiz": [
-                {"question": "What happens when you multiply a matrix by a vector?", "options": ["The vector's direction always changes.", "The vector may get rotated or scaled.", "The vector remains unchanged."]},
-                {"question": "Which of the following is true about eigenvectors?", "options": ["Eigenvectors change direction when multiplied by a matrix.", "Eigenvectors disappear when multiplied by a matrix.", "Eigenvectors retain their direction but may be scaled."]},
-                {"question": "What does an eigenvalue represent in the context of matrix multiplication with an eigenvector?", "options": ["The rotation angle of the vector.", "The factor by which the eigenvector is scaled.", "The determinant of the matrix"]},
-            ],
-            "correct_answers": ["The vector may get rotated or scaled.", "Eigenvectors retain their direction but may be scaled.", "The factor by which the eigenvector is scaled."]
-        },
-        {
-            "title": "Tutorial 2: Mathematical Foundation",
-            "pdf_file": "tutorial2.pdf",
-            "quiz": [
-                {"question": "What is Eigenvalue?", "options": ["A value associated with matrix", "A statistical measure", "A type of variable"]},
-                {"question": "PCA is based on which decomposition?", "options": ["SVD", "QR Decomposition", "Cholesky Decomposition"]},
-                {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
-            ],
-            "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
-        },
-        {   # Tutorial 3
-
-            "title": "Tutorial 3: PCA in Practice",
-            "pdf_file": "tutorial3.pdf",
-            "quiz": [
-                {"question": "What is Eigenvalue?", "options": ["A value associated with matrix", "A statistical measure", "A type of variable"]},
-                {"question": "PCA is based on which decomposition?", "options": ["SVD", "QR Decomposition", "Cholesky Decomposition"]},
-                {"question": "What is the output of PCA?", "options": ["Principal Components", "Coefficients", "Basis Vectors"]},
-            ],
-            "correct_answers": ["A value associated with matrix", "SVD", "Principal Components"]
-        },
-            
-        # Add more tutorials as needed
-    ]
-
-    # Display Tutorials
-    st.title("Learn PCA")
-    for idx, tutorial in enumerate(tutorials):
-        tutorial_number = idx + 1
-
-        # Check progress to unlock tutorials
-        if st.session_state.progress >= tutorial_number:
-            st.header(f"{tutorial['title']}")
-
-            # Retrieve and display the PDF
-            pdf_path = os.path.join(pdf_dir, tutorial['pdf_file'])
-            if os.path.exists(pdf_path):
-                display_pdf(pdf_path)
-            else:
-                st.error(f"PDF for {tutorial['title']} not found!")
-
-            # After displaying the PDF, show the quiz
-            if st.session_state.progress == tutorial_number and tutorial_number not in st.session_state.quiz_status:
-                st.write("### Ready to Test Yourself")
-                display_quiz(tutorial["quiz"], tutorial["correct_answers"], tutorial_number)
-                st.write("---")
-        else:
-            st.write(f"**Tutorial {tutorial_number} is locked. Complete the previous tutorial's quiz to unlock.**")
-
-# FAQ Section
-    st.title("Frequently Asked Questions (FAQ)")
-    faq_items = [
-        {"question": "What is PCA used for?", "answer": "PCA is used primarily for dimensionality reduction and data visualization, allowing us to reduce the number of variables in our data without losing much information."},
-        {"question": "Can PCA be used for classification?", "answer": "PCA itself is not a classification technique, but it can be used as a preprocessing step to reduce the number of features before applying classification algorithms."},
-        {"question": "Is PCA sensitive to data scaling?", "answer": "Yes, PCA is sensitive to the scale of the data. It is generally recommended to standardize or normalize the data before applying PCA."},
-        # Add more FAQs as needed
-    ]
-
-    for faq in faq_items:
-        st.subheader(f"**{faq['question']}**")
-        st.write(faq['answer'])      
-
-        
+def learn_pca_page():
+    learn_pca = LearnPCASection()
+    learn_pca.render_page()
+    
     # Display the next button
     if st.button("**Background Remover ⇨**", key="next"):
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
-        
         
 def feedback():
     storage = FeedbackStorage()
@@ -901,7 +599,7 @@ def feedback():
     with col1:
         st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
         rating = st_star_rating(
-            label="",
+            label="Make it shine:",
             maxValue=5,
             defaultValue=0,
             key="rating",
@@ -963,11 +661,11 @@ if current_page == "Home":
 elif current_page == "Compress Image":
     upload_image()
 elif current_page == "How PCA Works":
-    how_pca_works()
+    how_pca_works_page()
 elif current_page == "Compare Images":
     comparison()
 elif current_page == "Learn PCA":
-    what_PCA()
+    learn_pca_page()
 elif current_page == "Background Remover":
     background_remover_page()
 elif current_page == "Feedback":
