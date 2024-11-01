@@ -227,6 +227,7 @@ class ImageAnalytics:
         
         plt.tight_layout()
         return fig
+    
 
     def display_comparison(self):
         """Main function for image comparison page"""
@@ -378,6 +379,14 @@ class ImageAnalytics:
                 "compressed_image.jpg",
                 "image/jpeg"
             )
+    @staticmethod
+    def comparison():
+        """Main function to be called from app.py"""
+        analytics = ImageAnalytics()
+        analytics.display_comparison()      
+        
+def comparison():
+    ImageAnalytics.comparison()
 
     # Display the next button
     if st.button("**Learn PCA ⇨**", key="next"):
