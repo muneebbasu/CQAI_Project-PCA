@@ -9,13 +9,9 @@ from skimage.metrics import structural_similarity as ssim
 import matplotlib.pyplot as plt
 from pathlib import Path
 import cv2
-import io
 import base64  # Import base64 for encoding
-import os
 from skimage.color import rgb2lab, lab2rgb
 import requests
-import datetime
-import json
 from rembg import remove
 from background_remover import background_remover_page
 from database import FeedbackStorage
@@ -208,6 +204,12 @@ def upload_image():
 
             # Load the image
             img = Image.open(uploaded_image)
+            # Check if the image has an alpha channel
+            if img.mode == 'RGBA':
+                # Convert to RGB
+                img = img.convert('RGB')
+            # Save the image as JPEG
+            img.save("output_image.jpg", "JPEG")
             img_byte = BytesIO()
             img.save(img_byte, format='JPEG')
             img_byte.seek(0)

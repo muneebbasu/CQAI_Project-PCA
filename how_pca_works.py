@@ -6,7 +6,6 @@ from PIL import Image
 from io import BytesIO
 import matplotlib.pyplot as plt
 import time
-import os
 
 def set_custom_style():
     st.markdown("""
@@ -87,7 +86,7 @@ def set_custom_style():
 
 def pca_compress(channel, no_of_components, channel_name):
     with st.container():
-        st.markdown(f'<div class="step-header">{channel_name} Channel PCA:</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="step-header">{channel_name} PCA:</div>', unsafe_allow_html=True)
         mean = np.mean(channel, axis=0)
         centered_data = channel - mean
 
@@ -121,9 +120,12 @@ def pca_compress(channel, no_of_components, channel_name):
         return reconstructed_data.astype(np.uint8)
 
 def apply_pca_to_image(original_image, no_of_components):
-
     # Start timing
     start_time = time.time()
+
+    # Ensure the image is in RGB mode
+    if original_image.mode == 'RGBA':
+        original_image = original_image.convert('RGB')
 
     # Get original image size
     original_img_byte = BytesIO()
@@ -132,7 +134,7 @@ def apply_pca_to_image(original_image, no_of_components):
     
     with st.container():
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        img_array = np.array(original_image.convert("RGB"))
+        img_array = np.array(original_image)
         st.image(img_array, caption='Original Image', use_column_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
