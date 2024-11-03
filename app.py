@@ -261,18 +261,7 @@ def feedback():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
-        rating = st_star_rating(
-            label=" ",
-            maxValue=5,
-            defaultValue=0,
-            key="rating",
-            size=40,
-            customCSS={
-                ".stars": {"color": "#FFC107"},
-                "button": {"background-color": "transparent", "border": "none"}
-            }
-        )
+        st.feedback("Stars")
 
     with col2:
         st.markdown("<p class='big-font'>Tell us more:</p>", unsafe_allow_html=True)
