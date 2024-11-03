@@ -1,18 +1,8 @@
-from matplotlib.path import Path
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from utils import apply_pca, validate_image #type:ignore
 from streamlit_star_rating import st_star_rating
-import numpy as np
-from skimage.metrics import structural_similarity as ssim
-import matplotlib.pyplot as plt
-from pathlib import Path
-import cv2
-import base64  # Import base64 for encoding
-from skimage.color import rgb2lab, lab2rgb
 import requests
-from rembg import remove
 from background_remover import background_remover_page
 from database import FeedbackStorage
 from learn_pca import LearnPCASection
