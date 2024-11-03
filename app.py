@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-from streamlit_star_rating import st_star_rating
 import requests
 from background_remover import background_remover_page
 from database import FeedbackStorage
