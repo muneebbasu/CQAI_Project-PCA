@@ -208,8 +208,6 @@ def upload_image():
             if img.mode == 'RGBA':
                 # Convert to RGB
                 img = img.convert('RGB')
-            # Save the image as JPEG
-            img.save("output_image.jpg", "JPEG")
             img_byte = BytesIO()
             img.save(img_byte, format='JPEG')
             img_byte.seek(0)
