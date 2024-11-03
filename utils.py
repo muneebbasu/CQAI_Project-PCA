@@ -29,8 +29,6 @@ def apply_pca(img, num_components):
     compressed_img_bytes.seek(0) 
     return compressed_img_bytes
     
-
-print("Abs")
 # Function to perform PCA compression on a single channel
 def pca_compress(channel, num_components):
     # Subtract the mean from the data
