@@ -2,7 +2,7 @@
 
 import streamlit as st
 from PIL import Image
-from rembg import remove
+from rembg.bg import remove
 from io import BytesIO
 
 def background_remover_page():
