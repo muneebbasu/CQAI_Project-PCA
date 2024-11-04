@@ -261,7 +261,7 @@ def feedback():
     
     with col1:
         st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
-        rating = st.radio("Rate us:", ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
+        rating = st.Feedback("faces")
         
     with col2:
         st.markdown("<p class='big-font'>Tell us more:</p>", unsafe_allow_html=True)
