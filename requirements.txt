@@ -37,7 +37,7 @@ pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 pytz==2024.1
 referencing==0.35.1
-rembg.bg==2.0.59
+rembg==2.0.59
 requests==2.31.0
 rich==13.7.1
 rpds-py==0.18.1
