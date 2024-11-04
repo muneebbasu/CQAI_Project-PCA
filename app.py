@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import requests
+from streamlit_star_rating import st_star_rating
 from background_remover import background_remover_page
 from database import FeedbackStorage
 from learn_pca import LearnPCASection
@@ -261,8 +262,17 @@ def feedback():
     
     with col1:
         st.markdown("<p class='big-font'>Rate your experience:</p>", unsafe_allow_html=True)
-        rating = st.Feedback("faces")
-        
+        rating = st_star_rating(
+            label=" ",
+            maxValue=5,
+            defaultValue=0,
+            key="rating",
+            size=40,
+            customCSS={
+                ".stars": {"color": "#FFC107"},
+                "button": {"background-color": "transparent", "border": "none"}
+            }
+        )
     with col2:
         st.markdown("<p class='big-font'>Tell us more:</p>", unsafe_allow_html=True)
         comment = st.text_area(
