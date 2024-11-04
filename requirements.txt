@@ -25,7 +25,7 @@ matplotlib==3.8.4
 mdurl==0.1.2
 networkx==3.3
 numpy==1.26.4
-opencv-pyhton==4.10.0.84
+opencv-python==4.10.0.84
 packaging==24.0
 pandas==2.2.2
 pillow==10.3.0
