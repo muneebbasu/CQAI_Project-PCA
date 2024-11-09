@@ -126,11 +126,20 @@ def apply_pca_to_image(original_image, no_of_components):
     # Ensure the image is in RGB mode
     if original_image.mode == 'RGBA':
         original_image = original_image.convert('RGB')
+    
+    # Get original image size using BytesIO
+    img_byte_arr = BytesIO()
+    original_image.save(img_byte_arr, format='JPEG')  # Save the image to a byte array
+    original_size = img_byte_arr.tell()  # Get the size of the byte array
+    
+    # Get original image size using file size instead of byte stream
+    #original_size = len(original_image.fp.read())
+    #original_image.fp.seek(0)  # Reset file pointer
 
     # Get original image size
-    original_img_byte = BytesIO()
-    original_image.save(original_img_byte, format='JPEG')
-    original_size = len(original_img_byte.getvalue())
+    #original_img_byte = BytesIO()
+    #original_image.save(original_img_byte, format='JPEG')
+    #original_size = len(original_img_byte.getvalue())
     
     with st.container():
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
@@ -377,9 +386,21 @@ def how_pca_works_page():
     if uploaded_image:
         original_image = Image.open(uploaded_image)
         st.image(original_image, caption="Original Image", use_column_width=True)
+        
+        # Dynamically set max components based on image dimensions
+        img_array = np.array(original_image)
+        max_components = min(img_array.shape[0], img_array.shape[1])
 
         # Slider for choosing number of components
-        num_components = st.slider("Number of Principal Components", min_value=1, max_value=500, value=10)
+        num_components = st.slider(
+            "Number of Principal Components", 
+            min_value=1, 
+            max_value=max_components, 
+            value=min(10, max_components)
+        )
+
+        # Slider for choosing number of components
+        #num_components = st.slider("Number of Principal Components", min_value=1, max_value=500, value=10)
 
         if st.button("Apply PCA"):
             apply_pca_to_image(original_image, num_components)
