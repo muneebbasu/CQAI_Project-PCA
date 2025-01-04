@@ -8,7 +8,7 @@ from learn_pca import LearnPCASection
 from how_pca_works import how_pca_works_page
 from comparison_analytics import comparison_page
 from compress_image import upload_image
-#from background_remover import background_remover_page
+from background_remover import background_remover_page
 # Function to load images from URLs
 def load_image(url):
     response = requests.get(url)
