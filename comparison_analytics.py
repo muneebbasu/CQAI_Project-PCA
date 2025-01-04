@@ -39,9 +39,9 @@ def comparison_page():
 
         col1, col2 = st.columns(2)
         with col1:
-            st.image(original_image, caption="Original Image", use_column_width=True)
+            st.image(original_image, caption="Original Image", use_container_width=True)
         with col2:
-            st.image(compressed_image, caption="Compressed Image", use_column_width=True)
+            st.image(compressed_image, caption="Compressed Image", use_container_width=True)
 
         display_metrics(st.session_state['original_image'], st.session_state['compressed_image'])
         display_histograms(original_image, compressed_image)
@@ -347,10 +347,10 @@ def display_sharpness_comparison(original_image, compressed_image):
     col1, col2 = st.columns(2)
     with col1:
         st.write("**Original Image**")
-        st.image(original_image, caption=f"Sharpness: {original_sharpness:.2f}", use_column_width=True)
+        st.image(original_image, caption=f"Sharpness: {original_sharpness:.2f}", use_container_width=True)
     with col2:
         st.write("**Compressed Image**")
-        st.image(compressed_image, caption=f"Sharpness: {compressed_sharpness:.2f}", use_column_width=True)
+        st.image(compressed_image, caption=f"Sharpness: {compressed_sharpness:.2f}", use_container_width=True)
 
     st.markdown("""
     - Sharpness is a measure of the image's clarity and detail.

@@ -113,7 +113,7 @@ def pca_compress(channel, no_of_components, channel_name):
         reconstructed_data = np.dot(compressed_data, projection_matrix.T) + mean
 
         reconstructed_display_data = (reconstructed_data - np.min(reconstructed_data)) / (np.max(reconstructed_data) - np.min(reconstructed_data))
-        st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_column_width=True)
+        st.image(reconstructed_display_data, caption=f'Step in {channel_name}: Reconstructed Data', use_container_width=True)
 
         reconstructed_data = np.clip(reconstructed_data, 0, 255)
 
@@ -144,7 +144,7 @@ def apply_pca_to_image(original_image, no_of_components):
     with st.container():
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         img_array = np.array(original_image)
-        st.image(img_array, caption='Original Image', use_column_width=True)
+        st.image(img_array, caption='Original Image', use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="step-header">Channel Separation:</div>', unsafe_allow_html=True)
@@ -156,15 +156,15 @@ def apply_pca_to_image(original_image, no_of_components):
 
     with col1:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image(red_channel, caption='Red Channel', use_column_width=True)
+        st.image(red_channel, caption='Red Channel', use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     with col2:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image(green_channel, caption='Green Channel', use_column_width=True)
+        st.image(green_channel, caption='Green Channel', use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     with col3:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image(blue_channel, caption='Blue Channel', use_column_width=True)
+        st.image(blue_channel, caption='Blue Channel', use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with st.spinner('Applying PCA to each channel...'):
@@ -244,13 +244,13 @@ def apply_pca_to_image(original_image, no_of_components):
     
     with col6:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image(original_image, caption='Original Image', use_column_width=True)
+        st.image(original_image, caption='Original Image', use_container_width=True)
         st.markdown(f"Size: {original_size/1024:.2f} KB", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
     with col7:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image(compressed_img, caption='Compressed Image', use_column_width=True)
+        st.image(compressed_img, caption='Compressed Image', use_container_width=True)
         st.markdown(f"Size: {compressed_size/1024:.2f} KB", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -385,7 +385,7 @@ def how_pca_works_page():
 
     if uploaded_image:
         original_image = Image.open(uploaded_image)
-        st.image(original_image, caption="Original Image", use_column_width=True)
+        st.image(original_image, caption="Original Image", use_container_width=True)
         
         # Dynamically set max components based on image dimensions
         img_array = np.array(original_image)

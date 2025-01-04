@@ -163,13 +163,18 @@ class LearnPCASection:
         ]
     
     def display_pdf(self, pdf_file: str) -> None:
-        """Embed PDF viewer in Streamlit"""
+        """Embed PDF viewer in Streamlit using pdf.js"""
         try:
-            with open(pdf_file, "rb") as f:
+            pdf_path = os.path.join(self.pdf_dir, pdf_file)
+            with open(pdf_path, "rb") as f:
                 pdf_data = f.read()
             
             base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+            pdf_display = f'''
+            <div style="height: 100vh;">
+                <embed src="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="100%">
+            </div>
+            '''
             
             st.markdown(pdf_display, unsafe_allow_html=True)
             st.download_button(
@@ -240,7 +245,7 @@ class LearnPCASection:
                 # Display PDF
                 pdf_path = os.path.join(self.pdf_dir, tutorial['pdf_file'])
                 if os.path.exists(pdf_path):
-                    self.display_pdf(pdf_path)
+                    self.display_pdf(tutorial['pdf_file'])
                 else:
                     st.error(f"PDF for {tutorial['title']} not found!")
                 
@@ -257,3 +262,4 @@ class LearnPCASection:
         for faq in self.faq_items:
             st.subheader(f"**{faq['question']}**")
             st.write(faq['answer'])
+

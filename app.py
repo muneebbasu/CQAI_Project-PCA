@@ -3,13 +3,12 @@ from PIL import Image
 from io import BytesIO
 import requests
 from streamlit_star_rating import st_star_rating
-from background_remover import background_remover_page
 from database import FeedbackStorage
 from learn_pca import LearnPCASection
 from how_pca_works import how_pca_works_page
 from comparison_analytics import comparison_page
 from compress_image import upload_image
-
+#from background_remover import background_remover_page
 # Function to load images from URLs
 def load_image(url):
     response = requests.get(url)
@@ -268,6 +267,7 @@ def feedback():
             defaultValue=0,
             key="rating",
             size=40,
+            dark_theme = True,
             customCSS={
                 ".stars": {"color": "#FFC107"},
                 "button": {"background-color": "transparent", "border": "none"}
@@ -277,7 +277,7 @@ def feedback():
         st.markdown("<p class='big-font'>Tell us more:</p>", unsafe_allow_html=True)
         comment = st.text_area(
             "",
-            height=1,
+            height=70,
             placeholder="Share your thoughts, suggestions, or experiences...",
             key="feedback_comment"
         )

@@ -1,8 +1,6 @@
-# background_remover.py
-
 import streamlit as st
 from PIL import Image
-from rembg.bg import remove
+from rembg import remove
 from io import BytesIO
 
 def background_remover_page():
@@ -30,7 +28,7 @@ def background_remover_page():
         # Remove background
         if st.button("Remove Background"):
             with st.spinner("Processing..."):
-                # Remove background
+                # Remove background using rembg
                 output = remove(image)
                 
                 # Display result
