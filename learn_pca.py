@@ -163,7 +163,7 @@ class LearnPCASection:
         ]
     
     def display_pdf(self, pdf_file: str) -> None:
-        """Embed PDF viewer in Streamlit using pdf.js"""
+        """Embed PDF viewer in Streamlit using iframe"""
         try:
             pdf_path = os.path.join(self.pdf_dir, pdf_file)
             with open(pdf_path, "rb") as f:
@@ -171,9 +171,7 @@ class LearnPCASection:
             
             base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
             pdf_display = f'''
-            <div style="height: 100vh;">
-                <embed src="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="100%">
-            </div>
+            <iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" type="application/pdf"></iframe>
             '''
             
             st.markdown(pdf_display, unsafe_allow_html=True)
@@ -262,4 +260,3 @@ class LearnPCASection:
         for faq in self.faq_items:
             st.subheader(f"**{faq['question']}**")
             st.write(faq['answer'])
-
