@@ -15,7 +15,7 @@ def upload_image():
 
     if uploaded_image:
         if validate_image(uploaded_image):
-            st.image(uploaded_image, caption="Original Image", use_container_width=True)
+            st.image(uploaded_image, caption="Original Image", use_column_width=True)
 
             # Load the image
             img = Image.open(uploaded_image)
@@ -47,7 +47,7 @@ def upload_image():
                     time_taken = end_time - start_time
 
                     # Display compressed image
-                    st.image(compressed_image, caption="Compressed Image", use_container_width=True)
+                    st.image(compressed_image, caption="Compressed Image", use_column_width=True)
 
                     st.session_state['original_image'] = uploaded_image
                     st.session_state['compressed_image'] = compressed_image_bytes
