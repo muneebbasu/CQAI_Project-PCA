@@ -22,28 +22,36 @@ class FeedbackStorage:
 
     def _init_db(self):
         """Initialize SQLite database"""
-        conn = sqlite3.connect(str(self.db_path))
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS feedback
-                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    rating REAL NOT NULL,
-                    comment TEXT NOT NULL,
-                    timestamp TEXT NOT NULL)''')
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            c = conn.cursor()
+            c.execute('''CREATE TABLE IF NOT EXISTS feedback
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        rating REAL NOT NULL,
+                        comment TEXT NOT NULL,
+                        timestamp TEXT NOT NULL)''')
+            conn.commit()
+        except sqlite3.DatabaseError as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
 
     def save_feedback(self, name, rating, comment):
         """Save feedback to both SQLite and JSON"""
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Save to SQLite
-        conn = sqlite3.connect(str(self.db_path))
-        c = conn.cursor()
-        c.execute("INSERT INTO feedback (name, rating, comment, timestamp) VALUES (?, ?, ?, ?)",
-                (name, float(rating), comment, timestamp))
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            c = conn.cursor()
+            c.execute("INSERT INTO feedback (name, rating, comment, timestamp) VALUES (?, ?, ?, ?)",
+                    (name, float(rating), comment, timestamp))
+            conn.commit()
+        except sqlite3.DatabaseError as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
 
         # Save to JSON
         feedback_data = {
@@ -59,7 +67,7 @@ class FeedbackStorage:
                 try:
                     existing_feedback = json.load(f)
                 except json.JSONDecodeError:
-                    existing_feedback = []
+                    pass
 
         existing_feedback.append(feedback_data)
         
@@ -67,22 +75,24 @@ class FeedbackStorage:
             json.dump(existing_feedback, f, indent=4)
 
         # Create backup
-        self._create_backup()
+        backup_path = self.backup_dir / f'feedback_{timestamp}.json'
+        with open(backup_path, 'w') as f:
+            json.dump(existing_feedback, f, indent=4)
 
     def get_all_feedback(self):
-        """Get all feedback from SQLite"""
-        conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row  # This enables column access by name
-        c = conn.cursor()
-        c.execute("SELECT * FROM feedback ORDER BY timestamp DESC")
-        feedback = [{
-            'name': row['name'],
-            'rating': row['rating'],
-            'comment': row['comment'],
-            'timestamp': row['timestamp']
-        } for row in c.fetchall()]
-        conn.close()
-        return feedback
+        """Retrieve all feedback from SQLite"""
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            c = conn.cursor()
+            c.execute("SELECT name, rating, comment, timestamp FROM feedback")
+            rows = c.fetchall()
+            feedback_list = [{"name": row[0], "rating": row[1], "comment": row[2], "timestamp": row[3]} for row in rows]
+            return feedback_list
+        except sqlite3.DatabaseError as e:
+            print(f"Database error: {e}")
+            return []
+        finally:
+            conn.close()
 
     def get_recent_feedback(self, limit=5):
         """Get recent feedback"""
