@@ -1,3 +1,4 @@
+import onnxruntime
 import streamlit as st
 from PIL import Image
 from io import BytesIO
@@ -341,3 +342,4 @@ def generate_footer():
         This is the footer text. You can add any additional information or links here.
     </footer>
     """
+
