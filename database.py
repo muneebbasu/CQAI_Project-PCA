@@ -1,4 +1,3 @@
-# database.py
 import sqlite3
 import json
 import os
@@ -39,7 +38,7 @@ class FeedbackStorage:
 
     def save_feedback(self, name, rating, comment):
         """Save feedback to both SQLite and JSON"""
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         
         # Save to SQLite
         try:
@@ -75,13 +74,12 @@ class FeedbackStorage:
         with open(self.json_path, 'w') as f:
             json.dump(existing_feedback, f, indent=4)
             print("Feedback saved to JSON")
-            
+
         # Create backup
         backup_path = self.backup_dir / f'feedback_{timestamp}.json'
         with open(backup_path, 'w') as f:
             json.dump(existing_feedback, f, indent=4)
             print("Feedback backup created")
-
 
     def get_all_feedback(self):
         """Retrieve all feedback from SQLite"""
