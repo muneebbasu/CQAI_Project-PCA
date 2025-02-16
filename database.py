@@ -39,7 +39,7 @@ class FeedbackStorage:
 
     def save_feedback(self, name, rating, comment):
         """Save feedback to both SQLite and JSON"""
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         
         # Save to SQLite
         try:
