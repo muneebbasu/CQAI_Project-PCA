@@ -28,7 +28,7 @@ class FeedbackStorage:
                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
                         rating REAL NOT NULL,
-                        comment TEXT NOT NULL,
+                        comment TEXT NULL,
                         timestamp TEXT NOT NULL)''')
             conn.commit()
         except sqlite3.DatabaseError as e:
