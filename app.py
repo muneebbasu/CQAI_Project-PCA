@@ -193,32 +193,8 @@ def learn_pca_page():
         st.session_state.page_index = (st.session_state.page_index + 1) % len(pages)
         st.rerun()
         
-def feedback_page():
-    st.title("Feedback")
-    st.subheader("We value your feedback!")
-
-    # Feedback form
-    with st.form(key='feedback_form'):
-        name = st.text_input("Name")
-        rating = st_star_rating("Rating", maxValue=5, defaultValue=0, key="rating")
-        comment = st.text_area("Comment")
-        submit_button = st.form_submit_button(label='Submit')
-
-        if submit_button:
-            feedback_storage = FeedbackStorage()
-            feedback_storage.save_feedback(name, rating, comment)
-            st.success("Thank you for your feedback!")
-
-    # Display recent feedback
-    st.subheader("Recent Feedback")
-    feedback_storage = FeedbackStorage()
-    recent_feedback = feedback_storage.get_recent_feedback(limit=5)
-    for feedback in recent_feedback:
-        st.write(f"**Name:** {feedback['name']}")
-        st.write(f"**Rating:** {feedback['rating']}")
-        st.write(f"**Comment:** {feedback['comment']}")
-        st.write(f"**Timestamp:** {feedback['timestamp']}")
-        st.write("---")
+def feedback():
+    storage = FeedbackStorage()
     
     # Custom CSS for styling
     st.markdown("""
@@ -357,7 +333,7 @@ elif current_page == "Learn PCA":
 elif current_page == "Background Remover":
     background_remover_page()
 elif current_page == "Feedback":
-    feedback_page()
+    feedback()
 
 
 def generate_footer():

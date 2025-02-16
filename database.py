@@ -1,3 +1,4 @@
+# database.py
 import sqlite3
 import json
 import os
@@ -28,17 +29,17 @@ class FeedbackStorage:
                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
                         rating REAL NOT NULL,
-                        comment TEXT NULL,
+                        comment TEXT NOT NULL,
                         timestamp TEXT NOT NULL)''')
             conn.commit()
         except sqlite3.DatabaseError as e:
-            print(f"Database error during initialization: {e}")
+            print(f"Database error: {e}")
         finally:
             conn.close()
 
     def save_feedback(self, name, rating, comment):
         """Save feedback to both SQLite and JSON"""
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Save to SQLite
         try:
@@ -47,9 +48,8 @@ class FeedbackStorage:
             c.execute("INSERT INTO feedback (name, rating, comment, timestamp) VALUES (?, ?, ?, ?)",
                     (name, float(rating), comment, timestamp))
             conn.commit()
-            print("Feedback saved to SQLite")
         except sqlite3.DatabaseError as e:
-            print(f"Database error during save: {e}")
+            print(f"Database error: {e}")
         finally:
             conn.close()
 
@@ -73,13 +73,11 @@ class FeedbackStorage:
         
         with open(self.json_path, 'w') as f:
             json.dump(existing_feedback, f, indent=4)
-            print("Feedback saved to JSON")
 
         # Create backup
         backup_path = self.backup_dir / f'feedback_{timestamp}.json'
         with open(backup_path, 'w') as f:
             json.dump(existing_feedback, f, indent=4)
-            print("Feedback backup created")
 
     def get_all_feedback(self):
         """Retrieve all feedback from SQLite"""
@@ -89,10 +87,9 @@ class FeedbackStorage:
             c.execute("SELECT name, rating, comment, timestamp FROM feedback")
             rows = c.fetchall()
             feedback_list = [{"name": row[0], "rating": row[1], "comment": row[2], "timestamp": row[3]} for row in rows]
-            print(f"Retrieved {len(feedback_list)} feedback entries from SQLite")
             return feedback_list
         except sqlite3.DatabaseError as e:
-            print(f"Database error during retrieval: {e}")
+            print(f"Database error: {e}")
             return []
         finally:
             conn.close()
