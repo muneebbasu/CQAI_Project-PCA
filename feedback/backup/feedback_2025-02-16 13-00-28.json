@@ -46,11 +46,5 @@
         "rating": 5.0,
         "comment": "its great indeed",
         "timestamp": "2025-02-16 13-00-28"
-    },
-    {
-        "name": "Anonymous",
-        "rating": 4.0,
-        "comment": "Good",
-        "timestamp": "2025-02-16 13-10-20"
     }
 ]
