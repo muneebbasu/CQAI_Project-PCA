@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 from rembg import remove
 from io import BytesIO
+import numpy as np
 
 def background_remover_page():
     st.title("🎭 Background Remover")
@@ -29,7 +30,12 @@ def background_remover_page():
         if st.button("Remove Background"):
             with st.spinner("Processing..."):
                 # Remove background using rembg
-                output = remove(image)
+                @st.cache_data
+                def remove_background(image_array):
+                     return remove(image_array)
+                
+                output_array = remove_background(np.array(image))
+                output = Image.fromarray(output_array)
                 
                 # Display result
                 with col2:

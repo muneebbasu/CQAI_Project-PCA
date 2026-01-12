@@ -38,8 +38,8 @@ def upload_image():
                 with st.spinner('Processing...'):
                     import time  # Import time for measuring compression duration
                     start_time = time.time()  # Start timer
-
-                    compressed_image_bytes = apply_pca(img, num_components)
+ 
+                    compressed_image_bytes = apply_pca(img_array, num_components)
                     compressed_image = Image.open(compressed_image_bytes)
 
                     # Calculate time taken

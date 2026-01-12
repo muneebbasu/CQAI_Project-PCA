@@ -1,16 +1,18 @@
+import streamlit as st
 from PIL import Image
 import numpy as np
 from io import BytesIO
 
 # Function to apply PCA on image
-def apply_pca(img, num_components):
+@st.cache_data
+def apply_pca(image_array, num_components):
     # Convert image to numpy array
-    img_array = np.array(img)
-
+    # img_array = np.array(img) -> Pre-converted
+    
     # Splitting RGB channels
-    red_channel = img_array[:, :, 0]
-    green_channel = img_array[:, :, 1]
-    blue_channel = img_array[:, :, 2]
+    red_channel = image_array[:, :, 0]
+    green_channel = image_array[:, :, 1]
+    blue_channel = image_array[:, :, 2]
 
     # Apply PCA on each channel
     red_compressed = pca_compress(red_channel, num_components)
@@ -30,6 +32,7 @@ def apply_pca(img, num_components):
     return compressed_img_bytes
     
 # Function to perform PCA compression on a single channel
+@st.cache_data
 def pca_compress(channel, num_components):
     # Subtract the mean from the data
     mean = np.mean(channel, axis=0)

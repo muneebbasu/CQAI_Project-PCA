@@ -8,6 +8,35 @@ from skimage.filters import sobel
 from skimage.color import rgb2lab
 from scipy import stats
 
+@st.cache_data
+def calculate_ssim(original_array, compressed_array, win_size):
+    return ssim(original_array, compressed_array, win_size=win_size, channel_axis=-1)
+
+@st.cache_data
+def calculate_edges(image_gray_array):
+    return sobel(image_gray_array)
+
+@st.cache_data
+def calculate_fft_magnitude(image_gray_array):
+    f_transform = np.fft.fft2(image_gray_array)
+    f_shift = np.fft.fftshift(f_transform)
+    magnitude_spectrum = 20 * np.log(np.abs(f_shift))
+    return magnitude_spectrum
+
+@st.cache_data
+def calculate_color_diff(original_lab, compressed_lab):
+    return np.abs(original_lab - compressed_lab)
+
+@st.cache_data
+def calculate_sharpness(image_gray_array):
+     laplacian = cv2.Laplacian(image_gray_array, cv2.CV_64F)
+     return np.var(laplacian)
+
+@st.cache_data
+def calculate_texture(image_gray_array):
+    from skimage.feature import local_binary_pattern
+    return local_binary_pattern(image_gray_array, 8, 3, method='uniform')
+
 def comparison_page():
     st.title("🖼️ Compare Images")
 
@@ -84,7 +113,7 @@ def display_metrics(original_file, compressed_image):
     original_array = np.array(Image.open(original_file))
     compressed_array = np.array(Image.open(compressed_image))
     win_size = min(original_array.shape[0], original_array.shape[1], 7)
-    ssim_index = ssim(original_array, compressed_array, win_size=win_size, channel_axis=-1)
+    ssim_index = calculate_ssim(original_array, compressed_array, win_size)
 
     st.metric("SSIM (Structural Similarity Index)", f"{ssim_index:.4f}")
     st.markdown("""
@@ -178,8 +207,8 @@ def display_edge_detection_comparison(original_image, compressed_image):
     original_gray = np.array(original_image.convert("L"))
     compressed_gray = np.array(compressed_image.convert("L"))
 
-    original_edges = sobel(original_gray)
-    compressed_edges = sobel(compressed_gray)
+    original_edges = calculate_edges(original_gray)
+    compressed_edges = calculate_edges(compressed_gray)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
@@ -228,10 +257,7 @@ def display_frequency_domain_analysis(original_image, compressed_image):
 
     def fft_image(image):
         image_gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-        f_transform = np.fft.fft2(image_gray)
-        f_shift = np.fft.fftshift(f_transform)
-        magnitude_spectrum = 20 * np.log(np.abs(f_shift))
-        return magnitude_spectrum
+        return calculate_fft_magnitude(image_gray)
 
     original_fft = fft_image(original_image)
     compressed_fft = fft_image(compressed_image)
@@ -290,7 +316,7 @@ def display_color_difference_maps(original_image, compressed_image):
     original_lab = rgb2lab(np.array(original_image))
     compressed_lab = rgb2lab(np.array(compressed_image))
     
-    diff_lab = np.abs(original_lab - compressed_lab)
+    diff_lab = calculate_color_diff(original_lab, compressed_lab)
     diff_l = diff_lab[:, :, 0]
     diff_a = diff_lab[:, :, 1]
     diff_b = diff_lab[:, :, 2]
@@ -334,9 +360,7 @@ def display_sharpness_comparison(original_image, compressed_image):
 
     def image_sharpness(image):
         gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-        laplacian = cv2.Laplacian(gray_image, cv2.CV_64F)
-        sharpness = np.var(laplacian)
-        return sharpness
+        return calculate_sharpness(gray_image)
 
     original_sharpness = image_sharpness(original_image)
     compressed_sharpness = image_sharpness(compressed_image)
@@ -368,8 +392,8 @@ def display_texture_analysis(original_image, compressed_image):
     original_gray = np.array(original_image.convert("L"))
     compressed_gray = np.array(compressed_image.convert("L"))
 
-    original_lbp = local_binary_pattern(original_gray, 8, 3, method='uniform')
-    compressed_lbp = local_binary_pattern(compressed_gray, 8, 3, method='uniform')
+    original_lbp = calculate_texture(original_gray)
+    compressed_lbp = calculate_texture(compressed_gray)
 
     fig, (ax1, ax2) = plt.subplots (1, 2, figsize=(12, 6))
 

@@ -11,11 +11,13 @@ from comparison_analytics import comparison_page
 from compress_image import upload_image
 from background_remover import background_remover_page
 # Function to load images from URLs
+@st.cache_data
 def load_image(url):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
     return img
 
+@st.cache_data
 def load_image_from_path(image_path):
     img = Image.open(image_path)
     return img
@@ -36,6 +38,10 @@ def navigate_pages(pages):
 
     # Set the radio button selection to the current page
     page = st.sidebar.radio("Select a page:", pages, index=st.session_state.page_index)
+
+    # Sync session state with the selected page
+    if page in pages:
+        st.session_state.page_index = pages.index(page)
 
     # Return the current page
     return page
