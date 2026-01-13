@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pca-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: pca-web/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8000

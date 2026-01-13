@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Initialize Database
-from backend.database import FeedbackStorage
+from .database import FeedbackStorage
 db = FeedbackStorage()
 
 @app.get("/feedback")
