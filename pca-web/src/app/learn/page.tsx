@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, CheckCircle, ChevronDown, ChevronRight, Play, Brain, Database, AlertCircle } from "lucide-react"
+import { BookOpen, CheckCircle2, Lock, Play, ArrowRight, Brain, Lightbulb, GraduationCap, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { cn } from "@/lib/utils"
