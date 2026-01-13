@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Initialize Database
-from .database import FeedbackStorage
+from database import FeedbackStorage
 db = FeedbackStorage()
 
 @app.get("/feedback")
@@ -163,7 +163,7 @@ async def analyze_image(image: UploadFile = File(...)):
 
 @app.post("/compare/analytics")
 async def compare_analytics(original: UploadFile = File(...), compressed: UploadFile = File(...)):
-    import backend.analytics as ana
+    import analytics as ana
     import time
     
     start_time = time.perf_counter()
