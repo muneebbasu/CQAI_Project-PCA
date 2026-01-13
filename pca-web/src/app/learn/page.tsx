@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, CheckCircle2, Lock, Play, ArrowRight, Brain, Lightbulb, GraduationCap, AlertCircle } from "lucide-react"
+import { BookOpen, CircleCheck, Lock, Play, ArrowRight, Brain, Lightbulb, GraduationCap, CircleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { cn } from "@/lib/utils"
@@ -193,7 +193,7 @@ export default function LearnPage() {
                                 </div>
                                 {isDone ? (
                                     <div className="bg-green-100 p-1.5 rounded-full">
-                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                        <CircleCheck className="w-4 h-4 text-green-600" />
                                     </div>
                                 ) : isLocked ? (
                                     <Lock className="w-4 h-4 text-slate-300" />
@@ -265,12 +265,12 @@ export default function LearnPage() {
                                     </Button>
                                     {quizResult === "success" && (
                                         <span className="text-green-600 font-bold flex items-center gap-2">
-                                            <CheckCircle2 className="w-5 h-5" /> Correct! Tutorial Completed.
+                                            <CircleCheck className="w-5 h-5" /> Correct! Tutorial Completed.
                                         </span>
                                     )}
                                     {quizResult === "failure" && (
                                         <span className="text-red-600 font-bold flex items-center gap-2">
-                                            <AlertCircle className="w-5 h-5" /> Some answers are incorrect. Try again!
+                                            <CircleAlert className="w-5 h-5" /> Some answers are incorrect. Try again!
                                         </span>
                                     )}
                                 </div>
